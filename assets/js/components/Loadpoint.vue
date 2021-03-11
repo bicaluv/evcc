@@ -167,6 +167,8 @@ export default {
 		socTitle: String,
 		socCharge: Number,
 		minSoC: Number,
+		minSoCGeoLat: Number,
+		minSoCGeoLong: Number,
 		socTimerSet: Boolean,
 		socTimerActive: Boolean,
 
