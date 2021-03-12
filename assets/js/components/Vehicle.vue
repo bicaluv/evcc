@@ -5,8 +5,8 @@
 					v-if="minSoCNighttimeActive"
 					icon="bed"
 					:class="{
-						'text-primary': connected,
-						'text-muted': !connected,
+						'text-primary': isNighttime,
+						'text-muted': !isNighttime,
 					}"
 				></fa-icon>
 		</div>
@@ -55,6 +55,7 @@ export default {
 		minSoC: Number,
 		minSoCGeoLat: Number,
 		minSoCGeoLong: Number,
+		isNighttime: Boolean,
 	},
 	computed: {
 		socChargeDisplayWidth: function () {

@@ -415,6 +415,8 @@ func (lp *LoadPoint) Prepare(uiChan chan<- util.Param, pushChan chan<- push.Even
 	lp.publish("socLevels", lp.SoC.Levels)
 	lp.Unlock()
 
+	lp.publish("isNighttime", lp.isNighttime())
+
 	// use first vehicle for estimator
 	// run during prepare() to ensure cache has been attached
 	if len(lp.vehicles) > 0 {

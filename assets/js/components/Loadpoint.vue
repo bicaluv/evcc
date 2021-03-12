@@ -169,6 +169,7 @@ export default {
 		minSoC: Number,
 		minSoCGeoLat: Number,
 		minSoCGeoLong: Number,
+		isNighttime: Boolean,
 		socTimerSet: Boolean,
 		socTimerActive: Boolean,
 
