@@ -229,9 +229,7 @@ func (v *Identity) validateTokens(tokens oidc.Tokens) error {
 	}
 
 	v.tokens.AccessToken = tokens.AccessToken
-	// give some extra time to safely trigger new tokens before they expire
-	expirationTimeOfTokens := tokens.ExpiresIn - (tokens.ExpiresIn / 60)
-	v.tokens.Valid = time.Now().Add(time.Second * time.Duration(expirationTimeOfTokens))
+	v.tokens.Valid = time.Now().Add(time.Second * time.Duration(tokens.ExpiresIn))
 
 	// re-use refresh token
 	if tokens.RefreshToken != "" {
