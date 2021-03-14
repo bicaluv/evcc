@@ -21,6 +21,14 @@
 					icon="thermometer-half"
 					v-if="climater == 'on'"
 				></fa-icon>
+				<fa-icon
+					v-if="connected && minSoC > 0 && socCharge < minSoC && minSoCGeoLat > 0 && minSoCGeoLong > 0"
+					icon="bed"
+					:class="{
+						'text-primary ml-1': !isNighttime,
+						'text-muted ml-1': isNighttime,
+					}"
+				></fa-icon>
 			</div>
 			<h2 class="value">
 				{{ fmt(chargePower) }}
@@ -77,6 +85,15 @@ export default {
 		range: Number,
 		socTimerActive: Boolean,
 		socTimerSet: Boolean,
+		connected: Boolean,
+		charging: Boolean,
+		hasVehicle: Boolean,
+		connected: Boolean,
+		socCharge: Number,
+		minSoC: Number,
+		minSoCGeoLat: Number,
+		minSoCGeoLong: Number,
+		isNighttime: Boolean,
 	},
 	mixins: [formatter],
 };

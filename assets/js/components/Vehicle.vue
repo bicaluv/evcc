@@ -1,15 +1,6 @@
 <template>
 	<div>
-		<div class="mb-2">{{ socTitle || "Fahrzeug" }} 
-				<fa-icon
-					v-if="minSoCNighttimeActive"
-					icon="bed"
-					:class="{
-						'text-primary': isNighttime,
-						'text-muted': !isNighttime,
-					}"
-				></fa-icon>
-		</div>
+		<div class="mb-2">{{ socTitle || "Fahrzeug" }}</div>
 		<div class="progress" style="height: 24px; font-size: 100%; margin-top: 16px">
 			<div
 				class="progress-bar"
@@ -42,7 +33,6 @@
 </template>
 
 <script>
-import "../icons";
 
 export default {
 	name: "Vehicle",
@@ -53,9 +43,6 @@ export default {
 		hasVehicle: Boolean,
 		socCharge: Number,
 		minSoC: Number,
-		minSoCGeoLat: Number,
-		minSoCGeoLong: Number,
-		isNighttime: Boolean,
 	},
 	computed: {
 		socChargeDisplayWidth: function () {
@@ -85,9 +72,6 @@ export default {
 		},
 		minSoCActive: function () {
 			return this.minSoC > 0 && this.socCharge < this.minSoC;
-		},
-		minSoCNighttimeActive: function () {
-			return this.minSoCGeoLat > 0 && this.minSoCGeoLong > 0;
 		},
 		minSoCRemainingDisplayWidth: function () {
 			return this.minSoC - this.socCharge;

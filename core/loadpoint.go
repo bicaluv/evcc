@@ -527,7 +527,7 @@ func (lp *LoadPoint) isNighttime() bool {
 	if lp.SoC.MinGeoLat > float64(0) && lp.SoC.MinGeoLong > float64(0) {
 		dayOrNight, _, _ := sunrise.DayOrNight(lp.SoC.MinGeoLat, lp.SoC.MinGeoLong, time.Now())
 
-		lp.log.DEBUG.Printf("suspend until nighttime : %v", dayOrNight == sunrise.Night)
+		lp.log.DEBUG.Printf("suspend until nighttime: %v", dayOrNight == sunrise.Night)
 
 		return dayOrNight == sunrise.Night
 	}
