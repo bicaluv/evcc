@@ -42,7 +42,6 @@
                 <small class="text-muted">{{ fmtUnit(chargedEnergy) }}Wh</small>
             </h2>
         </div>
-
         <div class="col-6 col-md-3 mt-3" v-if="range >= 0">
             <div class="mb-2 value">Reichweite</div>
             <h2 class="value">

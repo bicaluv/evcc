@@ -1,5 +1,3 @@
-package id
-
 import (
 	"encoding/json"
 	"net/http"
