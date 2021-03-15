@@ -18,6 +18,8 @@ import (
 	evbus "github.com/asaskevich/EventBus"
 	"github.com/avast/retry-go"
 	"github.com/benbjohnson/clock"
+
+	"github.com/keep94/sunrise"
 )
 
 const (
@@ -43,8 +45,10 @@ type SoCConfig struct {
 	AlwaysUpdate bool       `mapstructure:"alwaysUpdate"`
 	Levels       []int      `mapstructure:"levels"`
 	Estimate     bool       `mapstructure:"estimate"`
-	Min          int        `mapstructure:"min"`    // Default minimum SoC, guarded by mutex
-	Target       int        `mapstructure:"target"` // Default target SoC, guarded by mutex
+	Min          int        `mapstructure:"min"`             // Default minimum SoC, guarded by mutex
+	MinGeoLat    float64    `mapstructure:"minGeoLatitude"`  // latitude to calculate nighttime to postpone min SoC, guarded by mutex
+	MinGeoLong   float64    `mapstructure:"minGeoLongitude"` // longitude to calculate nighttime to postpone min SoC, guarded by mutex
+	Target       int        `mapstructure:"target"`          // Default target SoC, guarded by mutex
 }
 
 // Poll modes
@@ -91,7 +95,7 @@ type LoadPoint struct {
 	}
 	Enable, Disable ThresholdConfig
 
-	MinCurrent    int64         // PV mode: start current	Min+PV mode: min current
+	MinCurrent    int64         // PV mode: start current   Min+PV mode: min current
 	MaxCurrent    int64         // Max allowed current. Physically ensured by the charger
 	GuardDuration time.Duration // charger enable/disable minimum holding time
 
@@ -365,11 +369,11 @@ func (lp *LoadPoint) evChargeCurrentWrappedMeterHandler(current float64) {
 	}
 	// TODO
 	// else if power > 0 && lp.Site.pvMeter != nil {
-	// 	// limit charge power to generation plus grid consumption/ minus grid delivery
-	// 	// as the charger cannot have consumed more than that
-	// 	// consumedPower := consumedPower(lp.pvPower, lp.batteryPower, lp.gridPower)
-	// 	consumedPower := lp.Site.consumedPower()
-	// 	power = math.Min(power, consumedPower)
+	//  // limit charge power to generation plus grid consumption/ minus grid delivery
+	//  // as the charger cannot have consumed more than that
+	//  // consumedPower := consumedPower(lp.pvPower, lp.batteryPower, lp.gridPower)
+	//  consumedPower := lp.Site.consumedPower()
+	//  power = math.Min(power, consumedPower)
 	// }
 
 	// handler only called if charge meter was replaced by dummy
@@ -406,8 +410,12 @@ func (lp *LoadPoint) Prepare(uiChan chan<- util.Param, pushChan chan<- push.Even
 	lp.publish("mode", lp.Mode)
 	lp.publish("targetSoC", lp.SoC.Target)
 	lp.publish("minSoC", lp.SoC.Min)
+	lp.publish("minSoCGeoLat", lp.SoC.MinGeoLat)
+	lp.publish("minSoCGeoLong", lp.SoC.MinGeoLong)
 	lp.publish("socLevels", lp.SoC.Levels)
 	lp.Unlock()
+
+	lp.publish("isNighttime", lp.isNighttime())
 
 	// use first vehicle for estimator
 	// run during prepare() to ensure cache has been attached
@@ -510,7 +518,21 @@ func (lp *LoadPoint) targetSocReached() bool {
 func (lp *LoadPoint) minSocNotReached() bool {
 	return lp.vehicle != nil &&
 		lp.SoC.Min > 0 &&
-		lp.socCharge < float64(lp.SoC.Min)
+		lp.socCharge < float64(lp.SoC.Min) &&
+		lp.isNighttime()
+}
+
+// isNighttime checks at the given geo position if it is currently night or day.
+func (lp *LoadPoint) isNighttime() bool {
+	if lp.SoC.MinGeoLat > float64(0) && lp.SoC.MinGeoLong > float64(0) {
+		dayOrNight, _, _ := sunrise.DayOrNight(lp.SoC.MinGeoLat, lp.SoC.MinGeoLong, time.Now())
+
+		lp.log.DEBUG.Printf("suspend until nighttime: %v", dayOrNight == sunrise.Night)
+
+		return dayOrNight == sunrise.Night
+	}
+
+	return true
 }
 
 // climateActive checks if vehicle has active climate request
