@@ -7,7 +7,7 @@ import (
 
 	"github.com/andig/evcc/util"
 	"github.com/andig/evcc/util/request"
-	"golang.org/x/oauth2"
+	"github.com/andig/evcc/vehicle/vw"
 )
 
 // https://identity-userinfo.vwgroup.io/oidc/userinfo
@@ -19,6 +19,7 @@ const BaseURL = "https://mobileapi.apps.emea.vwapps.io"
 // API is an api.Vehicle implementation for VW ID cars
 type API struct {
 	*request.Helper
+	identity *vw.Identity
 }
 
 // Actions and action values
@@ -34,17 +35,11 @@ const (
 )
 
 // NewAPI creates a new vehicle
-func NewAPI(log *util.Logger, identity oauth2.TokenSource) *API {
-	helper := request.NewHelper(log)
-	helper.Client.Transport = &oauth2.Transport{
-		Source: identity,
-		Base:   helper.Transport,
-	}
-
+func NewAPI(log *util.Logger, identity *vw.Identity) *API {
 	v := &API{
-		Helper: helper,
+		Helper:   request.NewHelper(log),
+		identity: identity,
 	}
-
 	return v
 }
 
@@ -52,7 +47,10 @@ func NewAPI(log *util.Logger, identity oauth2.TokenSource) *API {
 func (v *API) Vehicles() (res []string, err error) {
 	uri := fmt.Sprintf("%s/vehicles", BaseURL)
 
-	req, err := request.New(http.MethodGet, uri, nil, request.AcceptJSON)
+	req, err := request.New(http.MethodGet, uri, nil, map[string]string{
+		"Accept":        "application/json",
+		"Authorization": "Bearer " + v.identity.Token(),
+	})
 
 	var vehicles struct {
 		Data []struct {
@@ -153,7 +151,10 @@ type RangeStatus struct {
 func (v *API) Status(vin string) (res Status, err error) {
 	uri := fmt.Sprintf("%s/vehicles/%s/status", BaseURL, vin)
 
-	req, err := request.New(http.MethodGet, uri, nil, request.AcceptJSON)
+	req, err := request.New(http.MethodGet, uri, nil, map[string]string{
+		"Accept":        "application/json",
+		"Authorization": "Bearer " + v.identity.Token(),
+	})
 
 	if err == nil {
 		err = v.DoJSON(req, &res)
@@ -166,7 +167,10 @@ func (v *API) Status(vin string) (res Status, err error) {
 func (v *API) Action(vin, action, value string) error {
 	uri := fmt.Sprintf("%s/vehicles/%s/%s/%s", BaseURL, vin, action, value)
 
-	req, err := request.New(http.MethodPost, uri, nil, request.AcceptJSON)
+	req, err := request.New(http.MethodPost, uri, nil, map[string]string{
+		"Accept":        "application/json",
+		"Authorization": "Bearer " + v.identity.Token(),
+	})
 
 	if err == nil {
 		var res interface{}
@@ -182,7 +186,10 @@ func (v *API) Any(uri, vin string) (interface{}, error) {
 		uri = fmt.Sprintf(uri, vin)
 	}
 
-	req, err := request.New(http.MethodGet, uri, nil, request.AcceptJSON)
+	req, err := request.New(http.MethodGet, uri, nil, map[string]string{
+		"Accept":        "application/json",
+		"Authorization": "Bearer " + v.identity.Token(),
+	})
 
 	var res interface{}
 	if err == nil {
