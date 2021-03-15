@@ -95,7 +95,7 @@ type LoadPoint struct {
 	}
 	Enable, Disable ThresholdConfig
 
-	MinCurrent    int64         // PV mode: start current	Min+PV mode: min current
+	MinCurrent    int64         // PV mode: start current   Min+PV mode: min current
 	MaxCurrent    int64         // Max allowed current. Physically ensured by the charger
 	GuardDuration time.Duration // charger enable/disable minimum holding time
 
@@ -369,11 +369,11 @@ func (lp *LoadPoint) evChargeCurrentWrappedMeterHandler(current float64) {
 	}
 	// TODO
 	// else if power > 0 && lp.Site.pvMeter != nil {
-	// 	// limit charge power to generation plus grid consumption/ minus grid delivery
-	// 	// as the charger cannot have consumed more than that
-	// 	// consumedPower := consumedPower(lp.pvPower, lp.batteryPower, lp.gridPower)
-	// 	consumedPower := lp.Site.consumedPower()
-	// 	power = math.Min(power, consumedPower)
+	//  // limit charge power to generation plus grid consumption/ minus grid delivery
+	//  // as the charger cannot have consumed more than that
+	//  // consumedPower := consumedPower(lp.pvPower, lp.batteryPower, lp.gridPower)
+	//  consumedPower := lp.Site.consumedPower()
+	//  power = math.Min(power, consumedPower)
 	// }
 
 	// handler only called if charge meter was replaced by dummy
