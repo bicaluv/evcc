@@ -48,18 +48,18 @@
 					v-on:updated="setTargetSoC"
 				></Soc>
 				<!-- <div class="btn-group btn-group-toggle bg-white shadow-none">
-                    <label class="btn btn-outline-primary">
-                        <input
-                            type="checkbox"
-                            class="disabled"
-                            v-on:click="alert('not implemented - use api')"
-                        />
-                        <fa-icon
-                            icon="clock"
-                            v-bind:class="{ fas: socTimerActive, far: !socTimerActive }"
-                        ></fa-icon>
-                    </label>
-                </div> -->
+					<label class="btn btn-outline-primary">
+						<input
+							type="checkbox"
+							class="disabled"
+							v-on:click="alert('not implemented - use api')"
+						/>
+						<fa-icon
+							icon="clock"
+							v-bind:class="{ fas: timerActive, far: !timerActive }"
+						></fa-icon>
+					</label>
+				</div> -->
 			</div>
 		</div>
 
@@ -164,14 +164,16 @@ export default {
 		// vehicle
 		connected: Boolean,
 		// charging: Boolean,
+		enabled: Boolean,
 		socTitle: String,
 		socCharge: Number,
 		minSoC: Number,
 		minSoCGeoLat: Number,
 		minSoCGeoLong: Number,
 		isNighttime: Boolean,
-		socTimerSet: Boolean,
-		socTimerActive: Boolean,
+		timerSet: Boolean,
+		timerActive: Boolean,
+		targetTime: String,
 
 		// details
 		chargePower: Number,
