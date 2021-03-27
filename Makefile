@@ -98,3 +98,19 @@ image-rootfs:
 
 image-update:
 	gokr-packer -update yes $(IMAGE_OPTIONS)
+
+raspberrypi:
+	@echo Version: $(VERSION) $(BUILD_DATE)
+	# build ui
+	npm run build
+	# build new version
+	go build -v $(BUILD_TAGS) $(BUILD_ARGS)
+	# make mac version
+	mv evcc evcc_mac
+	# make raspberry version
+	env GOOS=linux GOARCH=arm go build -v $(BUILD_TAGS) $(BUILD_ARGS)
+	# stop already running service and copy new evcc to raspberry
+	ssh pi@raspberrypi 'sudo systemctl stop evcc.service'
+	scp -B evcc pi@raspberrypi:/home/evcc/evcc
+	# chmod and start service
+	ssh pi@raspberrypi 'sudo chmod 0755 /home/evcc/evcc; sudo systemctl start evcc.service'
