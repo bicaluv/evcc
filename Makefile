@@ -111,6 +111,6 @@ raspberrypi:
 	env GOOS=linux GOARCH=arm go build -v $(BUILD_TAGS) $(BUILD_ARGS)
 	# stop already running service and copy new evcc to raspberry
 	ssh pi@raspberrypi 'sudo systemctl stop evcc.service; sudo sysctl -w net.ipv4.ping_group_range="0 2147483647"'
-	scp -B evcc pi@raspberrypi:/home/evcc/evcc
+	scp -B evcc pi@raspberrypi:~/bin/evcc
 	# chmod and start service
-	ssh pi@raspberrypi 'sudo chmod 0755 /home/evcc/evcc; sudo systemctl start evcc.service'
+	ssh pi@raspberrypi 'sudo chmod 0755 ~/bin/evcc; sudo systemctl start evcc.service'
