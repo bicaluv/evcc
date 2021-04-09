@@ -134,4 +134,6 @@ sync-with-andig-and-deploy:
 	git restore dist
 	git clean -d -f dist
 	# push new files
+	git add -A
+	git commit -am "sync with andig"
 	git push origin master
