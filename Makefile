@@ -114,3 +114,24 @@ raspberrypi:
 	scp -B evcc pi@raspberrypi:~/bin/evcc
 	# chmod and start service
 	ssh pi@raspberrypi 'sudo chmod 0755 ~/bin/evcc; sudo systemctl start evcc.service'
+
+sync-with-andig-and-deploy:
+	# follwoing may show error if remote upstream alread configured
+	git remote add upstream https://github.com/andig/evcc.git
+	# show github remote streams
+	git remote -v
+	# get new changes
+	git fetch upstream
+	# local branch
+	git checkout master
+	# get changes
+	git merge upstream/master
+
+	# build and deploy
+	raspberrypi
+
+	# delete dist folder changes
+	git restore dist
+	git clean -d -f dist
+	# push new files
+	git push origin master
