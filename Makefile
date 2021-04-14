@@ -125,7 +125,7 @@ sync-with-andig-and-deploy:
 	# local branch
 	git checkout master
 	# get changes
-	git merge upstream/master
+	git merge upstream/master --no-edit --no-commit
 
 	# build and deploy
 	make raspberrypi
@@ -135,5 +135,5 @@ sync-with-andig-and-deploy:
 	git clean -d -f dist
 	# push new files
 	git add -A
-	git commit -am "sync with andig"
+	git commit -am "merge with andig"
 	git push origin master
