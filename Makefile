@@ -1,6 +1,7 @@
 .PHONY: default all clean install install-ui ui assets lint lint-ui test build test-release release
 .PHONY: docker publish-testing publish-latest publish-images
 .PHONY: prepare-image image-rootfs image-update
+.PHONY: soc server server-image
 
 # build vars
 TAG_NAME := $(shell test -d .git && git describe --abbrev=0 --tags)
@@ -137,3 +138,15 @@ sync-with-andig-and-deploy:
 	git add -A
 	git commit -am "merge with andig"
 	git push origin master
+	
+soc:
+	@echo Version: $(VERSION) $(BUILD_DATE)
+	go build -o evcc-soc $(BUILD_TAGS) $(BUILD_ARGS) github.com/andig/evcc/soc/client
+
+server:
+	@echo Version: $(VERSION) $(BUILD_DATE)
+	go build -o soc-server $(BUILD_TAGS) $(BUILD_ARGS) github.com/andig/evcc/soc/server
+
+publish-server:
+	docker build -f soc/Dockerfile --platform linux/amd64 -t andig/evcc-cloud .
+	docker push andig/evcc-cloud

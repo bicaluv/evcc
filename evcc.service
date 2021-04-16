@@ -3,7 +3,7 @@ Description=evcc
 After=syslog.target network.target
 
 [Service]
-ExecStart=/home/pi/bin/evcc --log error -c /home/pi/etc/evcc.yaml
+ExecStart=/home/pi/bin/evcc -c /home/pi/etc/evcc.yaml
 Restart=always
 
 [Install]
