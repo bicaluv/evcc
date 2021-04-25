@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"math"
-	"sort"
 	"strings"
 	"sync"
 	"time"
@@ -44,7 +43,6 @@ type PollConfig struct {
 type SoCConfig struct {
 	Poll         PollConfig `mapstructure:"poll"`
 	AlwaysUpdate bool       `mapstructure:"alwaysUpdate"`
-	Levels       []int      `mapstructure:"levels"`
 	Estimate     bool       `mapstructure:"estimate"`
 	Min          int        `mapstructure:"min"`             // Default minimum SoC, guarded by mutex
 	MinGeoLat    float64    `mapstructure:"minGeoLatitude"`  // latitude to calculate nighttime to postpone min SoC, guarded by mutex
@@ -139,8 +137,6 @@ func NewLoadPointFromConfig(log *util.Logger, cp configProvider, other map[strin
 	lp.Mode = api.ChargeModeString(string(lp.Mode))
 	lp.OnDisconnect.Mode = api.ChargeModeString(string(lp.OnDisconnect.Mode))
 
-	sort.Ints(lp.SoC.Levels)
-
 	// set vehicle polling mode
 	switch lp.SoC.Poll.Mode = strings.ToLower(lp.SoC.Poll.Mode); lp.SoC.Poll.Mode {
 	case pollCharging:
@@ -170,10 +166,6 @@ func NewLoadPointFromConfig(log *util.Logger, cp configProvider, other map[strin
 		lp.SoC.Target = lp.OnDisconnect.TargetSoC // use disconnect value as default soc
 		if lp.SoC.Target == 0 {
 			lp.SoC.Target = 100
-		}
-
-		if len(lp.SoC.Levels) > 0 {
-			lp.SoC.Target = lp.SoC.Levels[len(lp.SoC.Levels)-1]
 		}
 	}
 
@@ -417,7 +409,6 @@ func (lp *LoadPoint) Prepare(uiChan chan<- util.Param, pushChan chan<- push.Even
 	lp.publish("minSoC", lp.SoC.Min)
 	lp.publish("minSoCGeoLat", lp.SoC.MinGeoLat)
 	lp.publish("minSoCGeoLong", lp.SoC.MinGeoLong)
-	lp.publish("socLevels", lp.SoC.Levels)
 	lp.Unlock()
 
 	lp.publish("isNighttime", lp.isNighttime())
