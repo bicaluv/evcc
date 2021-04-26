@@ -44,10 +44,11 @@ type SoCConfig struct {
 	Poll         PollConfig `mapstructure:"poll"`
 	AlwaysUpdate bool       `mapstructure:"alwaysUpdate"`
 	Estimate     bool       `mapstructure:"estimate"`
-	Min          int        `mapstructure:"min"`             // Default minimum SoC, guarded by mutex
 	MinGeoLat    float64    `mapstructure:"minGeoLatitude"`  // latitude to calculate nighttime to postpone min SoC, guarded by mutex
 	MinGeoLong   float64    `mapstructure:"minGeoLongitude"` // longitude to calculate nighttime to postpone min SoC, guarded by mutex
+	Min          int        `mapstructure:"min"`             // Default minimum SoC, guarded by mutex
 	Target       int        `mapstructure:"target"`          // Default target SoC, guarded by mutex
+	Levels       []int      `mapstructure:"levels"`          // deprecated
 }
 
 // Poll modes
@@ -160,6 +161,10 @@ func NewLoadPointFromConfig(log *util.Logger, cp configProvider, other map[strin
 		} else {
 			log.WARN.Printf("poll interval '%v' is lower than %v and may deplete your battery or lead to API misuse. USE AT YOUR OWN RISK.", lp.SoC.Poll.Interval, pollInterval)
 		}
+	}
+
+	if len(lp.SoC.Levels) > 0 {
+		log.WARN.Printf("soc.levels are deprecated and will be removed in an upcoming release")
 	}
 
 	if lp.SoC.Target == 0 {
