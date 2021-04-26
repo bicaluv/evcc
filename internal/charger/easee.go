@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/andig/evcc/api"
-	"github.com/andig/evcc/core"
 	"github.com/andig/evcc/internal/charger/easee"
 	"github.com/andig/evcc/util"
 	"github.com/andig/evcc/util/request"
@@ -233,6 +232,8 @@ func (c *Easee) MaxCurrentMillis(current float64) error {
 
 	return err
 }
+
+var _ api.Meter = (*Easee)(nil)
 
 // CurrentPower implements the api.Meter interface.
 func (c *Easee) CurrentPower() (float64, error) {
