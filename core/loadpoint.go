@@ -44,11 +44,11 @@ type SoCConfig struct {
 	Poll         PollConfig `mapstructure:"poll"`
 	AlwaysUpdate bool       `mapstructure:"alwaysUpdate"`
 	Estimate     bool       `mapstructure:"estimate"`
-	MinGeoLat    float64    `mapstructure:"minGeoLatitude"`  // latitude to calculate nighttime to postpone min SoC, guarded by mutex
-	MinGeoLong   float64    `mapstructure:"minGeoLongitude"` // longitude to calculate nighttime to postpone min SoC, guarded by mutex
 	Min          int        `mapstructure:"min"`             // Default minimum SoC, guarded by mutex
 	Target       int        `mapstructure:"target"`          // Default target SoC, guarded by mutex
 	Levels       []int      `mapstructure:"levels"`          // deprecated
+	MinGeoLat    float64    `mapstructure:"minGeoLatitude"`  // latitude to calculate nighttime to postpone min SoC, guarded by mutex
+	MinGeoLong   float64    `mapstructure:"minGeoLongitude"` // longitude to calculate nighttime to postpone min SoC, guarded by mutex
 }
 
 // Poll modes
