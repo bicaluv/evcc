@@ -41,6 +41,7 @@ require (
 	github.com/jeremywohl/flatten v1.0.1
 	github.com/joeshaw/carwings v0.0.0-20210208214325-dacfdd3d7acc
 	github.com/kballard/go-shellquote v0.0.0-20180428030007-95032a82bc51
+	github.com/keep94/sunrise v1.0.1 // indirect
 	github.com/klauspost/compress v1.12.2 // indirect
 	github.com/koron/go-ssdp v0.0.2
 	github.com/korylprince/ipnetgen v1.0.0
