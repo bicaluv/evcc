@@ -18,7 +18,8 @@ import { faSun } from "@fortawesome/free-solid-svg-icons/faSun";
 import { faTemperatureHigh } from "@fortawesome/free-solid-svg-icons/faTemperatureHigh";
 import { faTemperatureLow } from "@fortawesome/free-solid-svg-icons/faTemperatureLow";
 import { faThermometerHalf } from "@fortawesome/free-solid-svg-icons/faThermometerHalf";
-import { faHeart } from "@fortawesome/free-solid-svg-icons/faHeart";
+import { faHeart as farHeart } from "@fortawesome/free-regular-svg-icons/faHeart";
+import { faHeart as fasHeart } from "@fortawesome/free-solid-svg-icons/faHeart";
 import { faGift } from "@fortawesome/free-solid-svg-icons/faGift";
 import { faBox } from "@fortawesome/free-solid-svg-icons/faBox";
 import { faBed } from "@fortawesome/free-solid-svg-icons/faBed";
@@ -41,7 +42,8 @@ library.add(
   faTemperatureHigh,
   faTemperatureLow,
   faThermometerHalf,
-  faHeart,
+  farHeart,
+  fasHeart,
   faGift,
   faBox,
   faBed,
