@@ -890,12 +890,7 @@ func (lp *LoadPoint) socPollAllowed() bool {
 		lp.log.DEBUG.Printf("next soc poll remaining time: %v", remaining.Truncate(time.Second))
 	}
 
-	res := lp.charging() || honourUpdateInterval && (remaining <= 0) || lp.connected() && lp.socUpdated.IsZero()
-	if res {
-		lp.socUpdated = lp.clock.Now()
-	}
-
-	return res
+	return lp.charging() || honourUpdateInterval && (remaining <= 0) || lp.connected() && lp.socUpdated.IsZero()
 }
 
 // publish state of charge, remaining charge duration and range
@@ -905,6 +900,8 @@ func (lp *LoadPoint) publishSoCAndRange() {
 	}
 
 	if lp.socPollAllowed() {
+		lp.socUpdated = lp.clock.Now()
+
 		f, err := lp.socEstimator.SoC(lp.chargedEnergy)
 		if err == nil {
 			lp.socCharge = math.Trunc(f)
@@ -920,10 +917,12 @@ func (lp *LoadPoint) publishSoCAndRange() {
 			chargeRemainingEnergy := 1e3 * lp.socEstimator.RemainingChargeEnergy(lp.SoC.Target)
 			lp.publish("chargeRemainingEnergy", chargeRemainingEnergy)
 		} else {
-			// we need a value- so retry on error
-			lp.socUpdated = lp.clock.Now()
-
-			lp.log.ERROR.Printf("vehicle: %v", err)
+			if errors.Is(err, api.ErrMustRetry) {
+				lp.socUpdated = time.Time{}
+				lp.log.DEBUG.Printf("vehicle: waiting for update")
+			} else {
+				lp.log.ERROR.Printf("vehicle: %v", err)
+			}
 		}
 
 		// range
