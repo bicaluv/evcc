@@ -215,11 +215,12 @@ func getUserInfo(state string, code string) (*User, error) {
 var typeFilter = []string{"custom", "cloud", "niu", "tesla"}
 
 var typeMap = map[string]string{
-	"bmw":   "BMW",
-	"skoda": "Škoda",
-	"enyaq": "Škoda Enyaq",
-	"vw":    "VW",
-	"id":    "VW ID",
+	"bmw":     "BMW",
+	"citroen": "Citroën",
+	"skoda":   "Škoda",
+	"enyaq":   "Škoda Enyaq",
+	"vw":      "VW",
+	"id":      "VW ID",
 }
 
 type typeDesc struct {
