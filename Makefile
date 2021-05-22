@@ -109,7 +109,7 @@ raspberrypi:
 	# make mac version
 	mv evcc evcc_mac
 	# make raspberry version
-	env GOOS=linux GOARCH=arm go build -v $(BUILD_TAGS) $(BUILD_ARGS)
+	env GOOS=linux GOARCH=arm GODEBUG=netdns=cgo go build -v $(BUILD_TAGS) $(BUILD_ARGS)
 	# stop already running service and copy new evcc to raspberry
 	ssh pi@raspberrypi 'sudo systemctl stop evcc.service'
 	scp -B evcc pi@raspberrypi:~/bin/evcc
