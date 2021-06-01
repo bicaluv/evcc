@@ -42,7 +42,7 @@ func FormValues(reader io.Reader, id string) (FormVars, error) {
 		if !exists {
 			return vars, errors.New("attribute not found")
 		}
-		vars.Inputs["action"] = action
+		vars.Action = action
 
 		form.Find("input").Each(func(_ int, el *goquery.Selection) {
 			if name, ok := el.Attr("name"); ok {
