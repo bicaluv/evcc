@@ -100,6 +100,10 @@ image-rootfs:
 image-update:
 	gokr-packer -update yes $(IMAGE_OPTIONS)
 
+windows:
+	# make windows version
+	env GOOS=windows GOARCH=amd64 GODEBUG=netdns=cgo+1 go build -v $(BUILD_TAGS) $(BUILD_ARGS)
+
 raspberrypi:
 	@echo Version: $(VERSION) $(BUILD_DATE)
 	# build ui
