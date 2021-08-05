@@ -13,9 +13,9 @@ type Vehicle struct {
 
 type Bulk struct {
 	VIN       string
-	Odometer  int
-	Range     int
-	Level     int
+	Odometer  float64
+	Range     float64
+	Level     float64
 	Charging  string // Charging
 	Latitude  float64
 	Longitude float64
@@ -23,13 +23,13 @@ type Bulk struct {
 }
 
 type Odometer struct {
-	Odometer  int
-	Timestamp int64
+	Odometer  float64
+	Timestamp float64
 }
 
 type EVBatteryLevel struct {
-	Range     int
-	Level     int
+	Range     float64
+	Level     float64
 	Timestamp int64
 }
 
