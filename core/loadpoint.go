@@ -435,7 +435,6 @@ func (lp *LoadPoint) Prepare(uiChan chan<- util.Param, pushChan chan<- push.Even
 
 	lp.publish("isNighttime", lp.isNighttime())
 
-	// use first vehicle for estimator
 	// run during prepare() to ensure cache has been attached
 	if len(lp.vehicles) > 0 {
 		// associate first vehicle if it cannot be auto-detected
