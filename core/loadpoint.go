@@ -217,6 +217,8 @@ func NewLoadPointFromConfig(log *util.Logger, cp configProvider, other map[strin
 	lp.socTimer = soc.NewTimer(lp.log, lp.adapter(), lp.MaxCurrent)
 	if lp.Enable.Threshold > lp.Disable.Threshold {
 		log.WARN.Printf("PV mode enable threshold (%.0fW) is larger than disable threshold (%.0fW)", lp.Enable.Threshold, lp.Disable.Threshold)
+	} else if lp.Enable.Threshold > 0 {
+		log.WARN.Printf("PV mode enable threshold %.0fW > 0 will start PV charging on grid power consumption. Did you mean -%.0f?", lp.Enable.Threshold, lp.Enable.Threshold)
 	}
 
 	return lp, nil
@@ -443,14 +445,13 @@ func (lp *LoadPoint) Prepare(uiChan chan<- util.Param, pushChan chan<- push.Even
 
 	lp.publish("isNighttime", lp.isNighttime())
 
-	// run during prepare() to ensure cache has been attached
-	if len(lp.vehicles) > 0 {
+	// always treat single vehicle as attached to allow poll mode: always
+	if len(lp.vehicles) == 1 {
 		lp.setActiveVehicle(lp.vehicles[0])
-		// associate first vehicle if it cannot be auto-detected
-		// if _, ok := lp.vehicles[0].(api.ChargeState); !ok {
-		//	lp.setActiveVehicle(lp.vehicles[0])
-		// }
+	}
 
+	// start detection if we have multiple vehicles
+	if len(lp.vehicles) > 1 {
 		lp.startVehicleDetection()
 	}
 
@@ -498,6 +499,7 @@ func (lp *LoadPoint) setLimit(chargeCurrent float64, force bool) (err error) {
 			lp.log.DEBUG.Printf("max charge current: %.2g", chargeCurrent)
 			err = charger.MaxCurrentMillis(chargeCurrent)
 		} else {
+			chargeCurrent = math.Trunc(chargeCurrent)
 			lp.log.DEBUG.Printf("max charge current: %d", int64(chargeCurrent))
 			err = lp.charger.MaxCurrent(int64(chargeCurrent))
 		}
