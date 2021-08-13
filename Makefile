@@ -105,7 +105,7 @@ image-update:
 
 windows:
 	# make windows version
-	env GOOS=windows GOARCH=amd64 GODEBUG=netdns=cgo+1 go build -v $(BUILD_TAGS) $(BUILD_ARGS)
+	env GOOS=windows GOARCH=amd64 go build -v $(BUILD_TAGS) $(BUILD_ARGS)
 
 raspberrypi:
 	@echo Version: $(VERSION) $(BUILD_DATE)
@@ -116,7 +116,7 @@ raspberrypi:
 	# make mac version
 	mv evcc evcc_mac
 	# make raspberry version
-	env GOOS=linux GOARCH=arm GODEBUG=netdns=cgo+1 go build -v $(BUILD_TAGS) $(BUILD_ARGS)
+	env GOOS=linux GOARCH=arm go build -v $(BUILD_TAGS) $(BUILD_ARGS)
 	# stop already running service and copy new evcc to raspberry
 	ssh pi@raspberrypi 'sudo systemctl stop evcc.service; mv ~/bin/evcc ~/bin/evcc_prev'
 	scp -B evcc pi@raspberrypi:~/bin/evcc
