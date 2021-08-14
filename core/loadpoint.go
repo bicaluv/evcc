@@ -2,6 +2,7 @@ package core
 
 import (
 	"errors"
+	"fmt"
 	"math"
 	"regexp"
 	"strings"
@@ -496,19 +497,23 @@ func (lp *LoadPoint) setLimit(chargeCurrent float64, force bool) (err error) {
 	// set current
 	if chargeCurrent != lp.chargeCurrent && chargeCurrent >= lp.GetMinCurrent() {
 		if charger, ok := lp.charger.(api.ChargerEx); ok {
-			lp.log.DEBUG.Printf("max charge current: %.2g", chargeCurrent)
-			err = charger.MaxCurrentMillis(chargeCurrent)
+			if err = charger.MaxCurrentMillis(chargeCurrent); err == nil {
+				lp.log.DEBUG.Printf("max charge current: %.2g", chargeCurrent)
+			} else {
+				err = fmt.Errorf("max charge current %.2g: %w", chargeCurrent, err)
+			}
 		} else {
 			chargeCurrent = math.Trunc(chargeCurrent)
-			lp.log.DEBUG.Printf("max charge current: %d", int64(chargeCurrent))
-			err = lp.charger.MaxCurrent(int64(chargeCurrent))
+			if err = lp.charger.MaxCurrent(int64(chargeCurrent)); err == nil {
+				lp.log.DEBUG.Printf("max charge current: %d", int64(chargeCurrent))
+			} else {
+				err = fmt.Errorf("max charge current %d: %w", int64(chargeCurrent), err)
+			}
 		}
 
 		if err == nil {
 			lp.chargeCurrent = chargeCurrent
 			lp.bus.Publish(evChargeCurrent, chargeCurrent)
-		} else {
-			lp.log.ERROR.Printf("max charge current %.2g: %v", chargeCurrent, err)
 		}
 	}
 
@@ -521,6 +526,7 @@ func (lp *LoadPoint) setLimit(chargeCurrent float64, force bool) (err error) {
 
 		// sleep vehicle
 		if car, ok := lp.vehicle.(api.VehicleStopCharge); !enabled && ok {
+			// log but don't propagate
 			if err := car.StopCharge(); err != nil {
 				lp.log.ERROR.Printf("vehicle remote charge stop: %v", err)
 			}
@@ -535,12 +541,13 @@ func (lp *LoadPoint) setLimit(chargeCurrent float64, force bool) (err error) {
 
 			// wake up vehicle
 			if car, ok := lp.vehicle.(api.VehicleStartCharge); enabled && ok {
+				// log but don't propagate
 				if err := car.StartCharge(); err != nil {
 					lp.log.ERROR.Printf("vehicle remote charge start: %v", err)
 				}
 			}
 		} else {
-			lp.log.ERROR.Printf("charger %s: %v", status[enabled], err)
+			err = fmt.Errorf("charger %s: %w", status[enabled], err)
 		}
 	}
 
@@ -716,7 +723,7 @@ func (lp *LoadPoint) setActiveVehicle(vehicle api.Vehicle) {
 	lp.log.INFO.Printf("vehicle updated: %s -> %s", from, to)
 
 	if lp.vehicle = vehicle; vehicle != nil {
-		lp.socEstimator = soc.NewEstimator(lp.log, vehicle, lp.SoC.Estimate)
+		lp.socEstimator = soc.NewEstimator(lp.log, lp.charger, vehicle, lp.SoC.Estimate)
 
 		lp.publish("hasVehicle", true)
 		lp.publish("socTitle", lp.vehicle.Title())
@@ -997,13 +1004,23 @@ func (lp *LoadPoint) socPollAllowed() bool {
 	return lp.charging() || honourUpdateInterval && (remaining <= 0) || lp.connected() && lp.socUpdated.IsZero()
 }
 
+// checks if the connected charger can provide SoC to the connected vehicle
+func (lp *LoadPoint) socProvidedByCharger() bool {
+	if charger, ok := lp.charger.(api.Battery); ok {
+		if _, err := charger.SoC(); err == nil {
+			return true
+		}
+	}
+	return false
+}
+
 // publish state of charge, remaining charge duration and range
 func (lp *LoadPoint) publishSoCAndRange() {
 	if lp.socEstimator == nil {
 		return
 	}
 
-	if lp.socPollAllowed() {
+	if lp.socPollAllowed() || lp.socProvidedByCharger() {
 		lp.socUpdated = lp.clock.Now()
 
 		f, err := lp.socEstimator.SoC(lp.chargedEnergy)
