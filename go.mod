@@ -4,13 +4,13 @@ go 1.16
 
 require (
 	github.com/PuerkitoBio/goquery v1.7.1
-	github.com/andig/evcc-config v0.0.0-20210516083211-8b5c1c7bd5b0
+	github.com/andig/evcc-config v0.0.0-20210809204447-2df3608f2d4d
 	github.com/asaskevich/EventBus v0.0.0-20200907212545-49d423059eef
-	github.com/avast/retry-go v3.0.0+incompatible
-	github.com/aws/aws-sdk-go v1.40.7
+	github.com/avast/retry-go/v3 v3.1.1
+	github.com/aws/aws-sdk-go v1.40.23
 	github.com/benbjohnson/clock v1.1.0
 	github.com/bogosj/tesla v1.0.2
-	github.com/containrrr/shoutrrr v0.4.4
+	github.com/containrrr/shoutrrr v0.5.0
 	github.com/denisbrodbeck/machineid v1.0.1
 	github.com/dustin/go-humanize v1.0.0
 	github.com/dylanmei/iso8601 v0.1.0
@@ -20,7 +20,6 @@ require (
 	github.com/go-ping/ping v0.0.0-20210506233800-ff8be3320020
 	github.com/go-telegram-bot-api/telegram-bot-api v4.6.4+incompatible
 	github.com/godbus/dbus/v5 v5.0.4
-	github.com/gokrazy/tools v0.0.0-20210628172405-c6536fc74432 // indirect
 	github.com/gokrazy/updater v0.0.0-20210130175436-d85b92498a28
 	github.com/golang/mock v1.6.0
 	github.com/google/go-github/v32 v32.1.0
@@ -39,8 +38,7 @@ require (
 	github.com/joeshaw/carwings v0.0.0-20210629130626-7ce4ec17db73
 	github.com/juju/ansiterm v0.0.0-20210706145210-9283cdf370b5 // indirect
 	github.com/kballard/go-shellquote v0.0.0-20180428030007-95032a82bc51
-	github.com/keep94/sunrise v1.0.1 // indirect
-	github.com/klauspost/compress v1.13.1 // indirect
+	github.com/keep94/sunrise v1.0.1
 	github.com/koron/go-ssdp v0.0.2
 	github.com/korylprince/ipnetgen v1.0.1
 	github.com/leodido/go-urn v1.2.1 // indirect
@@ -50,14 +48,14 @@ require (
 	github.com/manifoldco/promptui v0.8.0
 	github.com/mattn/go-runewidth v0.0.13 // indirect
 	github.com/mitchellh/mapstructure v1.4.1
-	github.com/muka/go-bluetooth v0.0.0-20210508070623-03c23c62f181
+	github.com/muka/go-bluetooth v0.0.0-20210812063148-b6c83362e27d
 	github.com/mxschmitt/golang-combinations v1.1.0
 	github.com/nirasan/go-oauth-pkce-code-verifier v0.0.0-20170819232839-0fbfe93532da
 	github.com/olekukonko/tablewriter v0.0.5
 	github.com/onsi/ginkgo v1.16.4 // indirect
 	github.com/prometheus/client_golang v1.11.0
-	github.com/prometheus/common v0.29.0 // indirect
-	github.com/prometheus/procfs v0.7.1 // indirect
+	github.com/prometheus/common v0.30.0 // indirect
+	github.com/prometheus/procfs v0.7.3 // indirect
 	github.com/robertkrimen/otto v0.0.0-20210614181706-373ff5438452
 	github.com/shurcooL/graphql v0.0.0-20200928012149-18c5c3165e3a
 	github.com/sirupsen/logrus v1.8.1 // indirect
@@ -70,15 +68,14 @@ require (
 	github.com/tv42/httpunix v0.0.0-20191220191345-2ba4b9c3382c
 	github.com/volkszaehler/mbmd v0.0.0-20210808132733-8235dc7d1327
 	gitlab.com/bboehmke/sunny v0.14.2
-	golang.org/x/crypto v0.0.0-20210711020723-a769d52b0f97 // indirect
-	golang.org/x/net v0.0.0-20210726213435-c6fcb2dbf985
-	golang.org/x/oauth2 v0.0.0-20210628180205-a41e5a781914
-	golang.org/x/text v0.3.6
-	google.golang.org/genproto v0.0.0-20210722135532-667f2b7c528f // indirect
-	google.golang.org/grpc v1.39.0
+	golang.org/x/crypto v0.0.0-20210813211128-0a44fdfbc16e // indirect
+	golang.org/x/net v0.0.0-20210813160813-60bc85c4be6d
+	golang.org/x/oauth2 v0.0.0-20210810183815-faf39c7919d5
+	golang.org/x/text v0.3.7
+	google.golang.org/genproto v0.0.0-20210816143620-e15ff196659d // indirect
+	google.golang.org/grpc v1.40.0
 	google.golang.org/protobuf v1.27.1
 	gopkg.in/go-playground/validator.v9 v9.31.0 // indirect
 	gopkg.in/sourcemap.v1 v1.0.5 // indirect
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b
-	nhooyr.io/websocket v1.8.7 // indirect
 )
