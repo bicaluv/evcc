@@ -1,10 +1,10 @@
-module github.com/andig/evcc
+module github.com/evcc-io/evcc
 
 go 1.16
 
 require (
+	github.com/Masterminds/sprig/v3 v3.2.2
 	github.com/PuerkitoBio/goquery v1.7.1
-	github.com/andig/evcc-config v0.0.0-20210809204447-2df3608f2d4d
 	github.com/asaskevich/EventBus v0.0.0-20200907212545-49d423059eef
 	github.com/avast/retry-go/v3 v3.1.1
 	github.com/aws/aws-sdk-go v1.40.23
@@ -15,6 +15,8 @@ require (
 	github.com/dustin/go-humanize v1.0.0
 	github.com/dylanmei/iso8601 v0.1.0
 	github.com/eclipse/paho.mqtt.golang v1.3.5
+	github.com/evcc-io/config v0.0.0-20210821100131-47523461441a
+	github.com/evcc-io/eebus v0.0.0-20210820160836-f112bdfd2960
 	github.com/fatih/color v1.12.0 // indirect
 	github.com/fatih/structs v1.1.0
 	github.com/go-ping/ping v0.0.0-20210506233800-ff8be3320020
@@ -28,6 +30,7 @@ require (
 	github.com/gorilla/handlers v1.5.1
 	github.com/gorilla/mux v1.8.0
 	github.com/gorilla/websocket v1.4.2
+	github.com/grandcat/zeroconf v1.0.0
 	github.com/gregdel/pushover v1.1.0
 	github.com/grid-x/modbus v0.0.0-20210714071042-7af2b65ec03b
 	github.com/hashicorp/go-version v1.3.0

@@ -1,9 +1,9 @@
 # evcc <!-- omit in toc -->
 
 [![Open in Visual Studio Code](https://open.vscode.dev/badges/open-in-vscode.svg)](https://open.vscode.dev/andig/evcc)
-[![Build Status](https://github.com/andig/evcc/workflows/Build/badge.svg)](https://github.com/andig/evcc/actions?query=workflow%3ABuild)
-[![Code Quality](https://goreportcard.com/badge/github.com/andig/evcc)](https://goreportcard.com/report/github.com/andig/evcc)
-[![Latest Version](https://img.shields.io/github/release/andig/evcc.svg)](https://github.com/andig/evcc/releases)
+[![Build Status](https://github.com/evcc-io/evcc/workflows/Build/badge.svg)](https://github.com/evcc-io/evcc/actions?query=workflow%3ABuild)
+[![Code Quality](https://goreportcard.com/badge/github.com/evcc-io/evcc)](https://goreportcard.com/report/github.com/evcc-io/evcc)
+[![Latest Version](https://img.shields.io/github/release/andig/evcc.svg)](https://github.com/evcc-io/evcc/releases)
 [![Pulls from Docker Hub](https://img.shields.io/docker/pulls/andig/evcc.svg)](https://hub.docker.com/r/andig/evcc)
 [![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=48YVXXA7BDNC2)
 
@@ -14,7 +14,7 @@ EVCC is an extensible EV Charge Controller with PV integration implemented in [G
 - simple and clean user interface
 - multiple [chargers](#charger):
   - Open source: [openWB](https://openwb.de/), [EVSEWifi](https://www.evse-wifi.de) (includes smartWB)
-  - Other commercial: ABL eMH1, go-eCharger, Heidelberg Energy Control, KEBA/BMW, NRGkick, Wallbe, Mobile Charger Connect
+  - Other commercial: ABL eMH1, go-eCharger, Heidelberg Energy Control, KEBA/BMW, NRGkick, Wallbe, Mobile Charger Connect, EEBUS (experimental)
   - Build-your-own: Phoenix (includes ESL Walli), [SimpleEVSE](https://www.evse-wifi.de/produkt-schlagwort/simple-evse-wb/)
   - Smart-Home outlets: FritzDECT, Shelly, Tasmota, TP-Link
 - multiple [meters](#meter): ModBus (Eastron SDM, MPM3PM, SBC ALE3 and many more), Discovergy (using HTTP plugin), SMA Sunny Home Manager and Energy Meter, KOSTAL Smart Energy Meter (KSEM, EMxx), any Sunspec-compatible inverter or home battery devices (Fronius, SMA, SolarEdge, KOSTAL, STECA, E3DC, ...), Tesla PowerWall
@@ -23,7 +23,7 @@ EVCC is an extensible EV Charge Controller with PV integration implemented in [G
 - status notifications using [Telegram](https://telegram.org), [PushOver](https://pushover.net) and [many more](https://containrrr.dev/shoutrrr/)
 - logging using [InfluxDB](https://www.influxdata.com) and [Grafana](https://grafana.com/grafana/)
 - granular charge power control down to mA steps with supported chargers (labeled by e.g. smartWB als [OLC](https://board.evse-wifi.de/viewtopic.php?f=16&t=187))
-- REST and MQTT [APIs](#api) for integration with home automation systems (e.g. [HomeAssistant](https://github.com/andig/evcc-hassio-addon))
+- REST and MQTT [APIs](#api) for integration with home automation systems (e.g. [HomeAssistant](https://github.com/evcc-io/evcc-hassio-addon))
 
 ![Screenshot](docs/screenshot.png)
 
@@ -187,6 +187,7 @@ Available charger implementations are:
 
 - `abl`: ABL eMH1 (requires Modbus adapter; [sponsors only](#sponsorship))
 - `easee`: Easee Home charger ([sponsors only](#sponsorship))
+- `eebus`: EEBUS compatible chargers (experimental)
 - `evsewifi`: chargers with SimpleEVSE controllers using [EVSE-WiFi](https://www.evse-wifi.de/) (includes smartWB)
 - `go-e`: go-eCharger chargers (both local and cloud API are supported, at least firmware 040.0 required)
 - `heidelberg`: Heidelberg Energy Control (requires Modbus adapter; [sponsors only](#sponsorship))
@@ -210,7 +211,24 @@ Smart-Home outlet charger implementations:
 - `tasmota`: Tasmota outlets
 - `tplink`: TP-Link HSXXX series outlets
 
-Configuration examples are documented at [andig/evcc-config#chargers](https://github.com/andig/evcc-config#chargers)
+Configuration examples are documented at [evcc-io/config#chargers](https://github.com/evcc-io/config#chargers)
+
+#### EEBUS (experimental) preparation <!-- omit in toc -->
+
+1. Run `evcc eebus-cert`
+2. Add the output to the `evcc.yaml` configuration file
+3. Open the web interface of the charger to get the chargers SKI (Identifcation Number)
+   For Porsche Mobile Charger Connect this is available in the top menu "Connections" sub-menu "Energy Manager"
+4. Add the charger to your configuration:
+   ```
+   chargers:
+   - name: mcc
+     type: eebus
+     ski: 1234-5678-9012-3456-7890-1234-5678-9012-3456
+   ```
+5. Run `evcc`
+6. On the web interface of the charger typically in the page showing the chargers SKI, `EVCC` should be shown including an option to pair the charger with `EVCC`. Do just that.
+7. The EVCC web interface should show the charger and status of a connected car and allow to charge
 
 #### KEBA preparation <!-- omit in toc -->
 
@@ -256,7 +274,7 @@ Available meter implementations are:
 - `tesla`: Tesla PowerWall meter. Use `usage` to choose meter type: `grid`/`pv`/`battery`.
 - `custom`: default meter implementation where meter readings- `power`, `energy`, per-phase `currents` and battery `soc` are configured using [plugins](#plugins)
 
-Configuration examples are documented at [andig/evcc-config#meters](https://github.com/andig/evcc-config#meters)
+Configuration examples are documented at [evcc-io/config#meters](https://github.com/evcc-io/config#meters)
 
 ### Vehicle
 
@@ -288,7 +306,7 @@ Available vehicle remote interface implementations are:
 - `tronity`: Tronity ([sponsors only](#sponsorship))
 - `custom`: default vehicle implementation using configurable [plugins](#plugins) for integrating any type of vehicle
 
-Configuration examples are documented at [andig/evcc-config#vehicles](https://github.com/andig/evcc-config#vehicles)
+Configuration examples are documented at [evcc-io/config#vehicles](https://github.com/evcc-io/config#vehicles)
 
 ### Home Energy Management System
 

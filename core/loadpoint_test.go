@@ -4,13 +4,13 @@ import (
 	"testing"
 	"time"
 
-	"github.com/andig/evcc/api"
-	"github.com/andig/evcc/core/soc"
-	"github.com/andig/evcc/mock"
-	"github.com/andig/evcc/push"
-	"github.com/andig/evcc/util"
 	evbus "github.com/asaskevich/EventBus"
 	"github.com/benbjohnson/clock"
+	"github.com/evcc-io/evcc/api"
+	"github.com/evcc-io/evcc/core/soc"
+	"github.com/evcc-io/evcc/mock"
+	"github.com/evcc-io/evcc/push"
+	"github.com/evcc-io/evcc/util"
 	"github.com/golang/mock/gomock"
 )
 
@@ -897,8 +897,8 @@ func TestScalePhases(t *testing.T) {
 			charger:      charger,
 			MinCurrent:   minA,
 			MaxCurrent:   maxA,
-			Phases:       int64(tc.phases),
-			activePhases: int64(tc.activePhases),
+			Phases:       tc.phases,
+			activePhases: tc.activePhases,
 			Enable: ThresholdConfig{
 				Delay: dt,
 			},
@@ -918,7 +918,7 @@ func TestScalePhases(t *testing.T) {
 		if res := lp.pvScalePhases(tc.availablePower, minA, maxA); tc.res != res {
 			t.Errorf("expected %v, got %v", tc.res, res)
 		} else {
-			if lp.Phases != int64(tc.toPhases) {
+			if lp.Phases != tc.toPhases {
 				t.Errorf("expected %dp, got %dp", tc.toPhases, lp.Phases)
 			}
 		}
