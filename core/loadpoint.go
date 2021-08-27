@@ -44,14 +44,12 @@ type PollConfig struct {
 
 // SoCConfig defines soc settings, estimation and update behaviour
 type SoCConfig struct {
-	Poll         PollConfig `mapstructure:"poll"`
-	AlwaysUpdate bool       `mapstructure:"alwaysUpdate"`
-	Estimate     bool       `mapstructure:"estimate"`
-	Min          int        `mapstructure:"min"`             // Default minimum SoC, guarded by mutex
-	Target       int        `mapstructure:"target"`          // Default target SoC, guarded by mutex
-	Levels       []int      `mapstructure:"levels"`          // deprecated
-	MinGeoLat    float64    `mapstructure:"minGeoLatitude"`  // latitude to calculate nighttime to postpone min SoC, guarded by mutex
-	MinGeoLong   float64    `mapstructure:"minGeoLongitude"` // longitude to calculate nighttime to postpone min SoC, guarded by mutex
+	Poll       PollConfig `mapstructure:"poll"`
+	Estimate   bool       `mapstructure:"estimate"`
+	Min        int        `mapstructure:"min"`             // Default minimum SoC, guarded by mutex
+	Target     int        `mapstructure:"target"`          // Default target SoC, guarded by mutex
+	MinGeoLat  float64    `mapstructure:"minGeoLatitude"`  // latitude to calculate nighttime to postpone min SoC, guarded by mutex
+	MinGeoLong float64    `mapstructure:"minGeoLongitude"` // longitude to calculate nighttime to postpone min SoC, guarded by mutex
 }
 
 // Poll modes
@@ -157,11 +155,7 @@ func NewLoadPointFromConfig(log *util.Logger, cp configProvider, other map[strin
 		if lp.SoC.Poll.Mode != "" {
 			log.WARN.Printf("invalid poll mode: %s", lp.SoC.Poll.Mode)
 		}
-		if lp.SoC.AlwaysUpdate {
-			log.WARN.Println("alwaysUpdate is deprecated and will be removed in a future release. Use poll instead.")
-		} else {
-			lp.SoC.Poll.Mode = pollConnected
-		}
+		lp.SoC.Poll.Mode = pollConnected
 	}
 
 	// set vehicle polling interval
@@ -171,10 +165,6 @@ func NewLoadPointFromConfig(log *util.Logger, cp configProvider, other map[strin
 		} else {
 			log.WARN.Printf("poll interval '%v' is lower than %v and may deplete your battery or lead to API misuse. USE AT YOUR OWN RISK.", lp.SoC.Poll.Interval, pollInterval)
 		}
-	}
-
-	if len(lp.SoC.Levels) > 0 {
-		log.WARN.Printf("vehicle.levels are deprecated and will be removed in an upcoming release")
 	}
 
 	if lp.SoC.Target == 0 {
