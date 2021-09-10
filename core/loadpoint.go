@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/evcc-io/evcc/api"
+	"github.com/evcc-io/evcc/core/loadpoint"
 	"github.com/evcc-io/evcc/core/soc"
 	"github.com/evcc-io/evcc/core/wrapper"
 	"github.com/evcc-io/evcc/provider"
@@ -124,17 +125,20 @@ type LoadPoint struct {
 	socTimer     *soc.Timer
 
 	// cached state
-	status         api.ChargeStatus // Charger status
-	remoteDemand   RemoteDemand     // External status demand
-	chargePower    float64          // Charging power
-	chargeCurrents []float64        // Phase currents
-	connectedTime  time.Time        // Time when vehicle was connected
-	pvTimer        time.Time        // PV enabled/disable timer
-	phaseTimer     time.Time        // 1p3p switch timer
+	status         api.ChargeStatus       // Charger status
+	remoteDemand   loadpoint.RemoteDemand // External status demand
+	chargePower    float64                // Charging power
+	chargeCurrents []float64              // Phase currents
+	connectedTime  time.Time              // Time when vehicle was connected
+	pvTimer        time.Time              // PV enabled/disable timer
+	phaseTimer     time.Time              // 1p3p switch timer
 
-	vehicleSoc     float64       // Vehicle SoC
-	chargedEnergy  float64       // Charged energy while connected in Wh
-	chargeDuration time.Duration // Charge duration
+	// charge progress
+	vehicleSoc              float64       // Vehicle SoC
+	chargeDuration          time.Duration // Charge duration
+	chargedEnergy           float64       // Charged energy while connected in Wh
+	chargeRemainingDuration time.Duration // Remaining charge duration
+	chargeRemainingEnergy   float64       // Remaining charge energy in Wh
 
 	tasks []func() error // task list for repeated execution
 }
@@ -205,7 +209,7 @@ func NewLoadPointFromConfig(log *util.Logger, cp configProvider, other map[strin
 	lp.configureChargerType(lp.charger)
 
 	// allow target charge handler to access loadpoint
-	lp.socTimer = soc.NewTimer(lp.log, lp.adapter(), lp.MaxCurrent)
+	lp.socTimer = soc.NewTimer(lp.log, &adapter{LoadPoint: lp})
 	if lp.Enable.Threshold > lp.Disable.Threshold {
 		log.WARN.Printf("PV mode enable threshold (%.0fW) is larger than disable threshold (%.0fW)", lp.Enable.Threshold, lp.Disable.Threshold)
 	} else if lp.Enable.Threshold > 0 {
@@ -462,7 +466,7 @@ func (lp *LoadPoint) Prepare(uiChan chan<- util.Param, pushChan chan<- push.Even
 	}
 
 	// allow charger to  access loadpoint
-	if ctrl, ok := lp.charger.(LoadpointController); ok {
+	if ctrl, ok := lp.charger.(loadpoint.Controller); ok {
 		ctrl.LoadpointControl(lp)
 	}
 }
@@ -491,25 +495,18 @@ func (lp *LoadPoint) setLimit(chargeCurrent float64, force bool) (err error) {
 	// set current
 	if chargeCurrent != lp.chargeCurrent && chargeCurrent >= lp.GetMinCurrent() {
 		if charger, ok := lp.charger.(api.ChargerEx); ok {
-			if err = charger.MaxCurrentMillis(chargeCurrent); err == nil {
-				lp.log.DEBUG.Printf("max charge current: %.2g", chargeCurrent)
-			} else {
-				err = fmt.Errorf("max charge current %.2g: %w", chargeCurrent, err)
-			}
+			err = charger.MaxCurrentMillis(chargeCurrent)
 		} else {
 			chargeCurrent = math.Trunc(chargeCurrent)
-			if err = lp.charger.MaxCurrent(int64(chargeCurrent)); err == nil {
-				lp.log.DEBUG.Printf("max charge current: %d", int64(chargeCurrent))
-			} else {
-				err = fmt.Errorf("max charge current %d: %w", int64(chargeCurrent), err)
-			}
+			err = lp.charger.MaxCurrent(int64(chargeCurrent))
 		}
 
 		if err == nil {
 			lp.chargeCurrent = chargeCurrent
 			lp.bus.Publish(evChargeCurrent, chargeCurrent)
+			lp.log.DEBUG.Printf("max charge current: %.3gA", chargeCurrent)
 		} else {
-			err = fmt.Errorf("max charge current %.2g: %w", chargeCurrent, err)
+			err = fmt.Errorf("max charge current %.3g: %w", chargeCurrent, err)
 		}
 	}
 
@@ -631,7 +628,7 @@ func (lp *LoadPoint) climateActive() bool {
 }
 
 // remoteControlled returns true if remote control status is active
-func (lp *LoadPoint) remoteControlled(demand RemoteDemand) bool {
+func (lp *LoadPoint) remoteControlled(demand loadpoint.RemoteDemand) bool {
 	lp.Lock()
 	defer lp.Unlock()
 
@@ -980,7 +977,7 @@ func (lp *LoadPoint) pvMaxCurrent(mode api.ChargeMode, sitePower float64) float6
 	deltaCurrent := powerToCurrent(-sitePower, lp.activePhases)
 	targetCurrent := math.Max(effectiveCurrent+deltaCurrent, 0)
 
-	lp.log.DEBUG.Printf("max charge current: %.1fA = %.1fA + %.1fA (%.0fW @ %dp)", targetCurrent, effectiveCurrent, deltaCurrent, sitePower, lp.activePhases)
+	lp.log.DEBUG.Printf("max charge current: %.3gA = %.3gA + %.3gA (%.0fW @ %dp)", targetCurrent, effectiveCurrent, deltaCurrent, sitePower, lp.activePhases)
 
 	// switch phases up/down
 	if _, ok := lp.charger.(api.ChargePhases); ok {
@@ -1186,14 +1183,13 @@ func (lp *LoadPoint) publishSoCAndRange() {
 			lp.log.DEBUG.Printf("vehicle soc: %.0f%%", lp.vehicleSoc)
 			lp.publish("vehicleSoc", lp.vehicleSoc)
 
-			chargeEstimate := time.Duration(-1)
 			if lp.charging() {
-				chargeEstimate = lp.socEstimator.RemainingChargeDuration(lp.chargePower, lp.SoC.Target)
+				lp.setRemainingDuration(lp.socEstimator.RemainingChargeDuration(lp.chargePower, lp.SoC.Target))
+			} else {
+				lp.setRemainingDuration(-1)
 			}
-			lp.publish("chargeEstimate", chargeEstimate)
 
-			chargeRemainingEnergy := 1e3 * lp.socEstimator.RemainingChargeEnergy(lp.SoC.Target)
-			lp.publish("chargeRemainingEnergy", chargeRemainingEnergy)
+			lp.setRemainingEnergy(1e3 * lp.socEstimator.RemainingChargeEnergy(lp.SoC.Target))
 		} else {
 			if errors.Is(err, api.ErrMustRetry) {
 				lp.socUpdated = time.Time{}
@@ -1216,7 +1212,7 @@ func (lp *LoadPoint) publishSoCAndRange() {
 	// reset if poll: connected/charging and not connected
 	if lp.SoC.Poll.Mode != pollAlways && !lp.connected() {
 		lp.publish("vehicleSoc", -1)
-		lp.publish("chargeEstimate", time.Duration(-1))
+		lp.publish("chargeRemainingDuration", time.Duration(-1))
 
 		// range
 		lp.publish("range", -1)
@@ -1274,7 +1270,7 @@ func (lp *LoadPoint) Update(sitePower float64, cheap bool) {
 	var err error
 
 	// track if remote disabled is actually active
-	remoteDisabled := RemoteEnable
+	remoteDisabled := loadpoint.RemoteEnable
 
 	// execute loading strategy
 	switch {
@@ -1294,8 +1290,8 @@ func (lp *LoadPoint) Update(sitePower float64, cheap bool) {
 		lp.socTimer.Reset() // once SoC is reached, the target charge request is removed
 
 	// OCPP has priority over target charging
-	case lp.remoteControlled(RemoteHardDisable):
-		remoteDisabled = RemoteHardDisable
+	case lp.remoteControlled(loadpoint.RemoteHardDisable):
+		remoteDisabled = loadpoint.RemoteHardDisable
 		fallthrough
 
 	case mode == api.ModeOff:
@@ -1315,9 +1311,9 @@ func (lp *LoadPoint) Update(sitePower float64, cheap bool) {
 		}
 
 	// target charging
-	case lp.socTimer.StartRequired():
+	case lp.socTimer.DemandActive() && false:
 		targetCurrent := lp.socTimer.Handle()
-		err = lp.setLimit(targetCurrent, false)
+		err = lp.setLimit(targetCurrent, true)
 
 	case mode == api.ModeMinPV || mode == api.ModePV:
 		targetCurrent := lp.pvMaxCurrent(mode, sitePower)
@@ -1337,8 +1333,8 @@ func (lp *LoadPoint) Update(sitePower float64, cheap bool) {
 		}
 
 		// Sunny Home Manager
-		if lp.remoteControlled(RemoteSoftDisable) {
-			remoteDisabled = RemoteSoftDisable
+		if lp.remoteControlled(loadpoint.RemoteSoftDisable) {
+			remoteDisabled = loadpoint.RemoteSoftDisable
 			targetCurrent = 0
 			required = true
 		}
@@ -1347,7 +1343,7 @@ func (lp *LoadPoint) Update(sitePower float64, cheap bool) {
 	}
 
 	// effective disabled status
-	if remoteDisabled != RemoteEnable {
+	if remoteDisabled != loadpoint.RemoteEnable {
 		lp.publish("remoteDisabled", remoteDisabled)
 	}
 

@@ -4,43 +4,11 @@ import (
 	"time"
 
 	"github.com/evcc-io/evcc/api"
+	"github.com/evcc-io/evcc/core/loadpoint"
 	"github.com/evcc-io/evcc/core/wrapper"
 )
 
-// LoadpointController gives access to loadpoint
-type LoadpointController interface {
-	LoadpointControl(LoadPointAPI)
-}
-
-// LoadPointAPI is the external loadpoint API
-type LoadPointAPI interface {
-	Name() string
-	HasChargeMeter() bool
-
-	// status
-	GetStatus() api.ChargeStatus
-
-	// settings
-	GetMode() api.ChargeMode
-	SetMode(api.ChargeMode)
-	GetTargetSoC() int
-	SetTargetSoC(int) error
-	GetMinSoC() int
-	SetMinSoC(int) error
-	GetPhases() int
-	SetPhases(int) error
-	SetTargetCharge(time.Time, int)
-	RemoteControl(string, RemoteDemand)
-
-	// energy
-	GetChargePower() float64
-	GetMinCurrent() float64
-	SetMinCurrent(float64)
-	GetMaxCurrent() float64
-	SetMaxCurrent(float64)
-	GetMinPower() float64
-	GetMaxPower() float64
-}
+var _ loadpoint.API = (*LoadPoint)(nil)
 
 // GetStatus returns the charging status
 func (lp *LoadPoint) GetStatus() api.ChargeStatus {
@@ -163,7 +131,7 @@ func (lp *LoadPoint) SetTargetCharge(finishAt time.Time, targetSoC int) {
 }
 
 // RemoteControl sets remote status demand
-func (lp *LoadPoint) RemoteControl(source string, demand RemoteDemand) {
+func (lp *LoadPoint) RemoteControl(source string, demand loadpoint.RemoteDemand) {
 	lp.Lock()
 	defer lp.Unlock()
 
@@ -237,4 +205,40 @@ func (lp *LoadPoint) GetMinPower() float64 {
 // GetMaxPower returns the max loadpoint power taking active phases into account
 func (lp *LoadPoint) GetMaxPower() float64 {
 	return Voltage * lp.GetMaxCurrent() * float64(lp.GetPhases())
+}
+
+// setRemainingDuration sets the estimated remaining charging duration
+func (lp *LoadPoint) setRemainingDuration(chargeRemainingDuration time.Duration) {
+	lp.Lock()
+	defer lp.Unlock()
+
+	if lp.chargeRemainingDuration != chargeRemainingDuration {
+		lp.chargeRemainingDuration = chargeRemainingDuration
+		lp.publish("chargeRemainingDuration", chargeRemainingDuration)
+	}
+}
+
+// GetRemainingDuration is the estimated remaining charging duration
+func (lp *LoadPoint) GetRemainingDuration() time.Duration {
+	lp.Lock()
+	defer lp.Unlock()
+	return lp.chargeRemainingDuration
+}
+
+// setRemainingEnergy sets the remaining charge energy in Wh
+func (lp *LoadPoint) setRemainingEnergy(chargeRemainingEnergy float64) {
+	lp.Lock()
+	defer lp.Unlock()
+
+	if lp.chargeRemainingEnergy != chargeRemainingEnergy {
+		lp.chargeRemainingEnergy = chargeRemainingEnergy
+		lp.publish("chargeRemainingEnergy", chargeRemainingEnergy)
+	}
+}
+
+// GetRemainingEnergy is the remaining charge energy in Wh
+func (lp *LoadPoint) GetRemainingEnergy() float64 {
+	lp.Lock()
+	defer lp.Unlock()
+	return lp.chargeRemainingEnergy
 }

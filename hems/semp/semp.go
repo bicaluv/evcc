@@ -14,7 +14,8 @@ import (
 
 	"github.com/denisbrodbeck/machineid"
 	"github.com/evcc-io/evcc/api"
-	"github.com/evcc-io/evcc/core"
+	"github.com/evcc-io/evcc/core/loadpoint"
+	"github.com/evcc-io/evcc/core/site"
 	"github.com/evcc-io/evcc/server"
 	"github.com/evcc-io/evcc/util"
 	"github.com/google/uuid"
@@ -49,11 +50,11 @@ type SEMP struct {
 	uid          string
 	hostURI      string
 	port         int
-	site         core.SiteAPI
+	site         site.API
 }
 
 // New generates SEMP Gateway listening at /semp endpoint
-func New(conf map[string]interface{}, site core.SiteAPI, cache *util.Cache, httpd *server.HTTPd) (*SEMP, error) {
+func New(conf map[string]interface{}, site site.API, cache *util.Cache, httpd *server.HTTPd) (*SEMP, error) {
 	cc := struct {
 		VendorID     string
 		DeviceID     string
@@ -363,7 +364,7 @@ func (s *SEMP) deviceID(id int) string {
 	return fmt.Sprintf(sempDeviceId, s.vid, ^uint64(0xffff<<48)&(binary.BigEndian.Uint64(did)+uint64(id)))
 }
 
-func (s *SEMP) deviceInfo(id int, lp core.LoadPointAPI) DeviceInfo {
+func (s *SEMP) deviceInfo(id int, lp loadpoint.API) DeviceInfo {
 	method := MethodEstimation
 	if lp.HasChargeMeter() {
 		method = MethodMeasurement
@@ -399,30 +400,28 @@ func (s *SEMP) allDeviceInfo() (res []DeviceInfo) {
 	return res
 }
 
-func (s *SEMP) deviceStatus(id int, lp core.LoadPointAPI) DeviceStatus {
+func (s *SEMP) deviceStatus(id int, lp loadpoint.API) DeviceStatus {
 	chargePower := lp.GetChargePower()
 
+	status := lp.GetStatus()
 	mode := lp.GetMode()
 	isPV := mode == api.ModeMinPV || mode == api.ModePV
 
-	status := StatusOff
-	if lp.GetStatus() == api.StatusC {
-		status = StatusOn
+	deviceStatus := StatusOff
+	if status == api.StatusC {
+		deviceStatus = StatusOn
 	}
 
-	var vehiclePresent bool
-	if vehiclePresentP, err := s.cache.GetChecked(id, "vehiclePresent"); err == nil {
-		vehiclePresent = vehiclePresentP.Val.(bool)
-	}
+	connected := status == api.StatusB || status == api.StatusC
 
 	res := DeviceStatus{
 		DeviceID:          s.deviceID(id),
-		EMSignalsAccepted: s.controllable && isPV && vehiclePresent,
+		EMSignalsAccepted: s.controllable && isPV && connected,
 		PowerInfo: PowerInfo{
 			AveragePower:      int(chargePower),
 			AveragingInterval: 60,
 		},
-		Status: status,
+		Status: deviceStatus,
 	}
 
 	return res
@@ -436,27 +435,21 @@ func (s *SEMP) allDeviceStatus() (res []DeviceStatus) {
 	return res
 }
 
-// TODO remove GetChecked function
-
-func (s *SEMP) planningRequest(id int, lp core.LoadPointAPI) (res PlanningRequest) {
+func (s *SEMP) planningRequest(id int, lp loadpoint.API) (res PlanningRequest) {
 	mode := lp.GetMode()
 	charging := lp.GetStatus() == api.StatusC
 	connected := charging || lp.GetStatus() == api.StatusB
 
-	chargeEstimate := time.Duration(-1)
-	if chargeEstimateP, err := s.cache.GetChecked(id, "chargeEstimate"); err == nil {
-		chargeEstimate = chargeEstimateP.Val.(time.Duration)
-	}
-
-	latestEnd := int(chargeEstimate / time.Second)
+	// remaining max demand duration in seconds
+	chargeRemainingDuration := lp.GetRemainingDuration()
+	latestEnd := int(chargeRemainingDuration / time.Second)
 	if mode == api.ModeMinPV || mode == api.ModePV || latestEnd <= 0 {
 		latestEnd = 24 * 3600
 	}
 
-	var maxEnergy int
-	if chargeRemainingEnergyP, err := s.cache.GetChecked(id, "chargeRemainingEnergy"); err == nil {
-		maxEnergy = int(chargeRemainingEnergyP.Val.(float64))
-	}
+	// remaining max energy demand in Wh
+	chargeRemainingEnergy := lp.GetRemainingEnergy()
+	maxEnergy := int(chargeRemainingEnergy)
 
 	// add 1kWh in case we're charging but battery claims full
 	if charging && maxEnergy == 0 {
@@ -531,9 +524,9 @@ func (s *SEMP) deviceControlHandler(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 
-			demand := core.RemoteSoftDisable
+			demand := loadpoint.RemoteSoftDisable
 			if dev.On {
-				demand = core.RemoteEnable
+				demand = loadpoint.RemoteEnable
 			}
 
 			lp.RemoteControl(sempController, demand)
