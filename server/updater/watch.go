@@ -2,6 +2,7 @@ package updater
 
 import (
 	"errors"
+	"strings"
 	"time"
 
 	"github.com/evcc-io/evcc/util"
@@ -28,6 +29,8 @@ func (u *watch) Send(key string, val interface{}) {
 }
 
 func (u *watch) watchReleases(installed string, out chan *github.RepositoryRelease) {
+	installed = strings.ReplaceAll(installed, "_mm", "")
+
 	for range time.NewTicker(6 * time.Hour).C {
 		rel, err := u.findReleaseUpdate(installed)
 		if err != nil {
