@@ -900,20 +900,16 @@ func (lp *LoadPoint) scalePhases(phases int) error {
 	return nil
 }
 
-// pvScalePhases switches phases if necessary and returns if switch occured
+// pvScalePhases switches phases if necessary and returns if switch occurred
 func (lp *LoadPoint) pvScalePhases(availablePower, minCurrent, maxCurrent float64) bool {
 	var waiting bool
 
 	phases := lp.GetPhases()
 	targetCurrent := availablePower / Voltage / float64(lp.activePhases)
 
-	if phases < lp.activePhases {
-		// ignore charger state inconsistency if switchable (https://github.com/evcc-io/evcc/issues/1572)
-		if _, ok := lp.charger.(api.ChargePhases); ok {
-			lp.setPhases(3)
-		} else {
-			lp.log.WARN.Printf("charger out of sync: %dp active @ %dp configured", lp.activePhases, phases)
-		}
+	// ignore charger state inconsistency if switchable (https://github.com/evcc-io/evcc/issues/1572)
+	if _, ok := lp.charger.(api.ChargePhases); !ok && phases < lp.activePhases {
+		lp.log.WARN.Printf("charger out of sync: %dp active @ %dp configured", lp.activePhases, phases)
 	}
 
 	// scale down phases
