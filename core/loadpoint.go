@@ -16,6 +16,7 @@ import (
 	"github.com/evcc-io/evcc/provider"
 	"github.com/evcc-io/evcc/push"
 	"github.com/evcc-io/evcc/util"
+	"github.com/keep94/sunrise"
 	"github.com/samber/lo"
 	"golang.org/x/exp/slices"
 
@@ -62,10 +63,12 @@ type PollConfig struct {
 
 // SoCConfig defines soc settings, estimation and update behaviour
 type SoCConfig struct {
-	Poll     PollConfig `mapstructure:"poll"`
-	Estimate bool       `mapstructure:"estimate"`
-	Min      int        `mapstructure:"min"`    // Default minimum SoC, guarded by mutex
-	Target   int        `mapstructure:"target"` // Default target SoC, guarded by mutex
+	Poll       PollConfig `mapstructure:"poll"`
+	Estimate   bool       `mapstructure:"estimate"`
+	Min        int        `mapstructure:"min"`             // Default minimum SoC, guarded by mutex
+	Target     int        `mapstructure:"target"`          // Default target SoC, guarded by mutex
+	MinGeoLat  float64    `mapstructure:"minGeoLatitude"`  // latitude to calculate nighttime to postpone min SoC, guarded by mutex
+	MinGeoLong float64    `mapstructure:"minGeoLongitude"` // longitude to calculate nighttime to postpone min SoC, guarded by mutex
 }
 
 // Poll modes
@@ -536,7 +539,12 @@ func (lp *LoadPoint) Prepare(uiChan chan<- util.Param, pushChan chan<- push.Even
 	lp.publish("mode", lp.Mode)
 	lp.publish("targetSoC", lp.SoC.Target)
 	lp.publish("minSoC", lp.SoC.Min)
+
+	lp.publish("minSoCGeoLat", lp.SoC.MinGeoLat)
+	lp.publish("minSoCGeoLong", lp.SoC.MinGeoLong)
 	lp.Unlock()
+
+	lp.publish("isNighttime", lp.isNighttime())
 
 	// activate default vehicle (allows poll mode: always)
 	if lp.defaultVehicle != nil {
@@ -685,7 +693,21 @@ func (lp *LoadPoint) targetSocReached() bool {
 func (lp *LoadPoint) minSocNotReached() bool {
 	return lp.vehicle != nil &&
 		lp.SoC.Min > 0 &&
-		lp.vehicleSoc < float64(lp.SoC.Min)
+		lp.vehicleSoc < float64(lp.SoC.Min) &&
+		lp.isNighttime()
+}
+
+// isNighttime checks at the given geo position if it is currently night or day.
+func (lp *LoadPoint) isNighttime() bool {
+	if lp.SoC.MinGeoLat > float64(0) && lp.SoC.MinGeoLong > float64(0) {
+		dayOrNight, _, _ := sunrise.DayOrNight(lp.SoC.MinGeoLat, lp.SoC.MinGeoLong, time.Now())
+
+		lp.log.DEBUG.Printf("suspend until nighttime: %v", dayOrNight == sunrise.Night)
+
+		return dayOrNight == sunrise.Night
+	}
+
+	return true
 }
 
 // climateActive checks if vehicle has active climate request

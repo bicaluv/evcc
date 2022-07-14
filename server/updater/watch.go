@@ -2,6 +2,7 @@ package updater
 
 import (
 	"errors"
+	"strings"
 	"time"
 
 	"github.com/evcc-io/evcc/util"
@@ -28,6 +29,8 @@ func (u *watch) Send(key string, val interface{}) {
 }
 
 func (u *watch) watchReleases(installed string, out chan *github.RepositoryRelease) {
+	installed = strings.ReplaceAll(installed, "_mm", "")
+
 	for range time.NewTicker(6 * time.Hour).C {
 		rel, err := u.findReleaseUpdate(installed)
 		if err != nil {
@@ -44,6 +47,8 @@ func (u *watch) watchReleases(installed string, out chan *github.RepositoryRelea
 
 // findReleaseUpdate validates if updates are available
 func (u *watch) findReleaseUpdate(installed string) (*github.RepositoryRelease, error) {
+	installed = strings.ReplaceAll(installed, "_mm", "")
+
 	rel, err := u.repo.GetLatestRelease()
 	if err != nil {
 		return nil, err
@@ -74,6 +79,8 @@ func (u *watch) findReleaseUpdate(installed string) (*github.RepositoryRelease, 
 
 // fetchReleaseNotes retrieves release notes up to semver and sends to client
 func (u *watch) fetchReleaseNotes(installed string) {
+	installed = strings.ReplaceAll(installed, "_mm", "")
+
 	if notes, err := u.repo.ReleaseNotes(installed); err == nil {
 		u.outChan <- util.Param{
 			Key: "releaseNotes",

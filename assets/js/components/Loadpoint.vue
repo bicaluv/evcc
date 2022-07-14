@@ -151,6 +151,11 @@ export default {
 		phaseRemaining: Number,
 		pvRemaining: Number,
 		pvAction: String,
+
+		// mm
+		minSoCGeoLat: Number,
+		minSoCGeoLong: Number,
+		isNighttime: Boolean,
 	},
 	data() {
 		return {

@@ -120,3 +120,55 @@ image-update:
 soc:
 	@echo Version: $(VERSION) $(SHA) $(BUILD_DATE)
 	go build $(BUILD_TAGS) $(BUILD_ARGS) github.com/evcc-io/evcc/cmd/soc
+	
+raspberrypi:
+	@echo Version: $(VERSION) $(BUILD_DATE)
+	# mm clean
+	make clean install install-ui assets
+	#rm -rf dist/
+	# mm install
+	#go install $$(go list -f '{{join .Imports " "}}' tools.go)
+	# mm install-ui
+	#npm ci
+	# mm ui
+	#npm run build
+	# mm assets
+	#go generate ./...
+	# mm build
+	# make mac version
+	go build -v $(BUILD_TAGS) $(BUILD_ARGS)
+	mv evcc evcc_mac
+	# make raspberry version
+	env GOOS=linux GOARCH=arm go build -v $(BUILD_TAGS) $(BUILD_ARGS)
+	# stop already running service and copy new evcc to raspberry
+	ssh pi@raspberrypi 'sudo systemctl stop evcc.service; mv ~/bin/evcc ~/bin/evcc_prev'
+	scp -B evcc pi@raspberrypi:~/bin/evcc
+	# chmod and start service
+	ssh pi@raspberrypi 'sudo sysctl -w net.ipv4.ping_group_range="0 2147483647"; sudo chmod 0755 ~/bin/evcc; sudo systemctl start evcc.service'
+	
+sync-with-andig-and-deploy:
+	# follwoing may show error if remote upstream alread configured
+	# git remote add upstream https://github.com/andig/evcc.git
+	# show github remote streams
+	git remote -v
+	# get new changes
+	git fetch upstream
+	# local branch
+	git checkout master
+	# get changes
+	git merge upstream/master --no-edit --no-commit
+	
+	# build and deploy
+	make raspberrypi
+	
+	# delete dist folder changes
+	git restore dist
+	git clean -d -f dist
+	# push new files
+	git add -A
+	git commit -am "merge with evcc upstream"
+	git push origin master
+	# update sync detection file
+	ssh pi@raspberrypi 'sudo echo -1 > ~/etc/check_fork.state'
+	# show commits in browser
+	open https://github.com/evcc-io/evcc/commits/master

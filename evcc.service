@@ -1,0 +1,10 @@
+[Unit]
+Description=evcc
+After=syslog.target network.target
+
+[Service]
+ExecStart=/home/pi/bin/evcc -c /home/pi/etc/evcc.yaml
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
