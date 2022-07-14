@@ -123,23 +123,15 @@ soc:
 	
 raspberrypi:
 	@echo Version: $(VERSION) $(BUILD_DATE)
-	# mm clean
-	make clean install install-ui assets
-	#rm -rf dist/
-	# mm install
-	#go install $$(go list -f '{{join .Imports " "}}' tools.go)
-	# mm install-ui
-	#npm ci
-	# mm ui
-	#npm run build
-	# mm assets
-	#go generate ./...
-	# mm build
+	# mm make all without tests
+	make clean install install-ui ui assets build
+
 	# make mac version
-	go build -v $(BUILD_TAGS) $(BUILD_ARGS)
 	mv evcc evcc_mac
+
 	# make raspberry version
 	env GOOS=linux GOARCH=arm go build -v $(BUILD_TAGS) $(BUILD_ARGS)
+	
 	# stop already running service and copy new evcc to raspberry
 	ssh pi@raspberrypi 'sudo systemctl stop evcc.service; mv ~/bin/evcc ~/bin/evcc_prev'
 	scp -B evcc pi@raspberrypi:~/bin/evcc
