@@ -24,6 +24,8 @@ import (
 	"github.com/avast/retry-go/v3"
 	"github.com/benbjohnson/clock"
 	"github.com/cjrd/allocate"
+	"github.com/emirpasic/gods/queues"
+	aq "github.com/emirpasic/gods/queues/arrayqueue"
 )
 
 const (
@@ -153,6 +155,8 @@ type LoadPoint struct {
 	chargeRemainingDuration time.Duration // Remaining charge duration
 	chargeRemainingEnergy   float64       // Remaining charge energy in Wh
 	progress                *Progress     // Step-wise progress indicator
+
+	tasks queues.Queue // tasks to be executed
 }
 
 // NewLoadPointFromConfig creates a new loadpoint
@@ -243,8 +247,7 @@ func NewLoadPointFromConfig(log *util.Logger, cp configProvider, other map[strin
 		lp.log.WARN.Printf("locking phase config to %dp for switchable charger", lp.DefaultPhases)
 	}
 
-	// allow target charge handler to access loadpoint
-	lp.socTimer = soc.NewTimer(lp.log, &adapter{LoadPoint: lp})
+	// validate thresholds
 	if lp.Enable.Threshold > lp.Disable.Threshold {
 		lp.log.WARN.Printf("PV mode enable threshold (%.0fW) is larger than disable threshold (%.0fW)", lp.Enable.Threshold, lp.Disable.Threshold)
 	} else if lp.Enable.Threshold > 0 {
@@ -273,7 +276,11 @@ func NewLoadPoint(log *util.Logger) *LoadPoint {
 		Disable:       ThresholdConfig{Delay: 3 * time.Minute, Threshold: 0}, // t, W
 		GuardDuration: 5 * time.Minute,
 		progress:      NewProgress(0, 10), // soc progress indicator
+		tasks:         aq.New(),
 	}
+
+	// allow target charge handler to access loadpoint
+	lp.socTimer = soc.NewTimer(lp.log, &adapter{LoadPoint: lp})
 
 	return lp
 }
@@ -441,12 +448,13 @@ func (lp *LoadPoint) evVehicleDisconnectHandler() {
 
 	// remove active vehicle if not default
 	if lp.vehicle != lp.defaultVehicle {
-		lp.setActiveVehicle(nil)
+		lp.setActiveVehicle(lp.defaultVehicle)
 		lp.unpublishVehicle()
 	}
 
 	// set default mode on disconnect
 	if lp.ResetOnDisconnect {
+		// TODO respect defaultVehicle
 		lp.applyAction(lp.onDisconnect)
 	}
 
@@ -808,6 +816,9 @@ func (lp *LoadPoint) selectVehicleByID(id string) api.Vehicle {
 
 // setActiveVehicle assigns currently active vehicle and configures soc estimator
 func (lp *LoadPoint) setActiveVehicle(vehicle api.Vehicle) {
+	lp.Lock()
+	defer lp.Unlock()
+
 	if lp.vehicle == vehicle {
 		return
 	}
@@ -825,23 +836,22 @@ func (lp *LoadPoint) setActiveVehicle(vehicle api.Vehicle) {
 	lp.log.INFO.Printf("vehicle updated: %s -> %s", from, to)
 
 	if lp.vehicle = vehicle; vehicle != nil {
+		lp.socUpdated = time.Time{}
+
 		lp.socEstimator = soc.NewEstimator(lp.log, lp.charger, vehicle, lp.SoC.Estimate)
 
 		lp.publish("vehiclePresent", true)
 		lp.publish("vehicleTitle", lp.vehicle.Title())
 		lp.publish("vehicleCapacity", lp.vehicle.Capacity())
 
-		// publish odometer once
-		if vs, ok := lp.vehicle.(api.VehicleOdometer); ok {
-			if odo, err := vs.Odometer(); err == nil {
-				lp.log.DEBUG.Printf("vehicle odometer: %.0fkm", odo)
-				lp.publish("vehicleOdometer", odo)
-			} else {
-				lp.log.ERROR.Printf("vehicle odometer: %v", err)
-			}
-		}
+		// release lock to unblock api
+		lp.Unlock()
 
+		lp.addTask(lp.vehicleOdometer)
 		lp.applyAction(vehicle.OnIdentified())
+
+		// re-apply lock to match defer above
+		lp.Lock()
 
 		lp.progress.Reset()
 	} else {
@@ -931,6 +941,18 @@ func (lp *LoadPoint) identifyVehicleByStatus() {
 	// remove previous vehicle if status was not confirmed
 	if _, ok := lp.vehicle.(api.ChargeState); ok {
 		lp.setActiveVehicle(nil)
+	}
+}
+
+// vehicleOdometer updates odometer
+func (lp *LoadPoint) vehicleOdometer() {
+	if vs, ok := lp.vehicle.(api.VehicleOdometer); ok {
+		if odo, err := vs.Odometer(); err == nil {
+			lp.log.DEBUG.Printf("vehicle odometer: %.0fkm", odo)
+			lp.publish("vehicleOdometer", odo)
+		} else {
+			lp.log.ERROR.Printf("vehicle odometer: %v", err)
+		}
 	}
 }
 
@@ -1440,8 +1462,24 @@ func (lp *LoadPoint) publishSoCAndRange() {
 	}
 }
 
+// addTask adds a single task to the queue
+func (lp *LoadPoint) addTask(task func()) {
+	lp.tasks.Enqueue(task)
+}
+
+// processTasks executes a single task from the queue
+func (lp *LoadPoint) processTasks() {
+	if lp.tasks != nil {
+		if task, ok := lp.tasks.Dequeue(); ok {
+			task.(func())()
+		}
+	}
+}
+
 // Update is the main control function. It reevaluates meters and charger state
 func (lp *LoadPoint) Update(sitePower float64, cheap, batteryBuffered bool) {
+	lp.processTasks()
+
 	mode := lp.GetMode()
 	lp.publish("mode", mode)
 
