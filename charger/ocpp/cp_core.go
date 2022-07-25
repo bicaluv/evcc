@@ -103,7 +103,7 @@ func (cp *CP) MeterValues(request *core.MeterValuesRequest) (*core.MeterValuesCo
 		cp.mu.Lock()
 		cp.setMeterValues(request)
 
-		if energy, ok := cp.measureands[string(types.MeasurandEnergyActiveImportRegister)]; ok {
+		if energy, ok := cp.measurements[string(types.MeasurandEnergyActiveImportRegister)]; ok {
 			v, _ := strconv.ParseInt(energy.Value, 10, 64)
 			cp.currentTransaction.Charged = v - cp.currentTransaction.MeterValueStart
 		}
@@ -125,9 +125,9 @@ func getSampleKey(s types.SampledValue) string {
 func (cp *CP) setMeterValues(request *core.MeterValuesRequest) {
 	for _, meterValue := range request.MeterValue {
 		// ignore old meter value requests
-		if meterValue.Timestamp.Time.After(cp.latestMeterValueTimestamp) {
+		if meterValue.Timestamp.Time.After(cp.meterUpdated) {
 			for _, sample := range meterValue.SampledValue {
-				cp.measureands[getSampleKey(sample)] = sample
+				cp.measurements[getSampleKey(sample)] = sample
 			}
 		}
 	}

@@ -3,7 +3,6 @@ package ocpp
 import (
 	"fmt"
 	"sync"
-	"time"
 
 	"github.com/evcc-io/evcc/util"
 	ocpp16 "github.com/lorenzodonini/ocpp-go/ocpp1.6"
@@ -19,11 +18,10 @@ type CS struct {
 
 func (cs *CS) Register(id string, meterSupported bool) *CP {
 	cp := &CP{
-		id:                        id,
-		log:                       util.NewLogger("ocpp-cp"),
-		latestMeterValueTimestamp: time.Now(),
-		measureands:               make(map[string]types.SampledValue),
-		meterSupported:            meterSupported,
+		id:             id,
+		log:            util.NewLogger("ocpp-cp"),
+		measurements:   make(map[string]types.SampledValue),
+		meterSupported: meterSupported,
 	}
 
 	cp.initialized = sync.NewCond(&cp.mu)
@@ -58,7 +56,7 @@ func (cs *CS) NewChargePoint(chargePoint ocpp16.ChargePointConnection) {
 	if _, err := cs.chargepointByID(chargePoint.ID()); err != nil {
 		cs.log.WARN.Println(err)
 
-		cs.log.INFO.Printf("new chargepoint with ID (%s) detected, atempting to remap", chargePoint.ID())
+		cs.log.INFO.Printf("new chargepoint with ID (%s) detected, attempting to remap", chargePoint.ID())
 		if unknownIDCP, ok := cs.cps[""]; ok && unknownIDCP != nil {
 			cs.mu.Lock()
 			unknownIDCP.id = chargePoint.ID()
