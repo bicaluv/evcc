@@ -102,10 +102,10 @@ func NewOpenWB(log *util.Logger, mqttconf mqtt.Config, id int, topic string, p1p
 		// TODO remove after https://github.com/snaptec/openWB/issues/1757
 		cpTopic = strings.TrimSuffix(cpTopic, "1") + "2"
 	}
-	wakeupS := provider.NewMqtt(log, client, fmt.Sprintf("%s/set/isss/%d/get/%s", topic, id, cpTopic),
+	wakeupS := provider.NewMqtt(log, client, fmt.Sprintf("%s/set/isss/%s", topic, cpTopic),
 		timeout).WithRetained().IntSetter("cp")
 
-	authS := provider.NewMqtt(log, client, fmt.Sprintf("%s/set/chargepoint/%d/get/%s", topic, id, openwb.RfidTopic),
+	authS := provider.NewMqtt(log, client, fmt.Sprintf("%s/set/chargepoint/%d/set/%s", topic, id, openwb.RfidTopic),
 		timeout).WithRetained().StringSetter("rfid")
 
 	// meter getters
