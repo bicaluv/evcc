@@ -150,8 +150,14 @@ raspberrypi:
 	scp -B evcc pi@raspberrypi:~/bin/evcc
 	# chmod and start service
 	ssh pi@raspberrypi 'sudo sysctl -w net.ipv4.ping_group_range="0 2147483647"; sudo chmod 0755 ~/bin/evcc; sudo systemctl start evcc.service'
-	
+
 sync-with-andig-and-deploy:
+	# show commits in browser
+	open https://github.com/evcc-io/evcc/commits/master
+	@echo "Proceed with build? (Y|n)"
+	@read line; if [ "$$line" != "Y" ]; then echo aborting; exit 1 ; fi
+	@echo building...
+
 	# follwoing may show error if remote upstream alread configured
 	# git remote add upstream https://github.com/andig/evcc.git
 	# show github remote streams
@@ -175,5 +181,3 @@ sync-with-andig-and-deploy:
 	git push origin master
 	# update sync detection file
 	ssh pi@raspberrypi 'sudo echo -1 > ~/etc/check_fork.state'
-	# show commits in browser
-	open https://github.com/evcc-io/evcc/commits/master
