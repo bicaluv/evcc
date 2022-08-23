@@ -69,8 +69,10 @@ type PollConfig struct {
 type SoCConfig struct {
 	Poll       PollConfig `mapstructure:"poll"`
 	Estimate   bool       `mapstructure:"estimate"`
-	Min        int        `mapstructure:"min"`             // Default minimum SoC, guarded by mutex
-	Target     int        `mapstructure:"target"`          // Default target SoC, guarded by mutex
+	Min_       int        `mapstructure:"min"`    // TODO deprecated
+	Target_    int        `mapstructure:"target"` // TODO deprecated
+	min        int        // Default minimum SoC, guarded by mutex
+	target     int        // Default target SoC, guarded by mutex
 	MinGeoLat  float64    `mapstructure:"minGeoLatitude"`  // latitude to calculate nighttime to postpone min SoC, guarded by mutex
 	MinGeoLong float64    `mapstructure:"minGeoLongitude"` // longitude to calculate nighttime to postpone min SoC, guarded by mutex
 }
@@ -197,6 +199,14 @@ func NewLoadPointFromConfig(log *util.Logger, cp configProvider, other map[strin
 		lp.log.WARN.Println("maxCurrent must be larger than minCurrent")
 	}
 
+	if lp.SoC.Min_ != 0 {
+		lp.log.WARN.Println("Configuring soc.min at loadpoint is deprecated and must be applied per vehicle")
+	}
+
+	if lp.SoC.Target_ != 0 {
+		lp.log.WARN.Println("Configuring soc.target at loadpoint is deprecated and must be applied per vehicle")
+	}
+
 	// store defaults
 	lp.collectDefaults()
 
@@ -256,7 +266,7 @@ func NewLoadPoint(log *util.Logger) *LoadPoint {
 		status:        api.StatusNone,
 		MinCurrent:    6,                                                     // A
 		MaxCurrent:    16,                                                    // A
-		SoC:           SoCConfig{Min: 0, Target: 100},                        // %
+		SoC:           SoCConfig{min: 0, target: 100},                        // %
 		Enable:        ThresholdConfig{Delay: time.Minute, Threshold: 0},     // t, W
 		Disable:       ThresholdConfig{Delay: 3 * time.Minute, Threshold: 0}, // t, W
 		GuardDuration: 5 * time.Minute,
@@ -526,9 +536,8 @@ func (lp *LoadPoint) Prepare(uiChan chan<- util.Param, pushChan chan<- push.Even
 
 	lp.Lock()
 	lp.publish("mode", lp.Mode)
-	lp.publish("targetSoC", lp.SoC.Target)
-	lp.publish("minSoC", lp.SoC.Min)
-
+	lp.publish("targetSoC", lp.SoC.target)
+	lp.publish("minSoC", lp.SoC.min)
 	lp.publish("minSoCGeoLat", lp.SoC.MinGeoLat)
 	lp.publish("minSoCGeoLong", lp.SoC.MinGeoLong)
 	lp.Unlock()
@@ -665,17 +674,17 @@ func (lp *LoadPoint) setStatus(status api.ChargeStatus) {
 // If vehicle is not configured this will always return false
 func (lp *LoadPoint) targetSocReached() bool {
 	return lp.vehicle != nil &&
-		lp.SoC.Target > 0 &&
-		lp.SoC.Target < 100 &&
-		lp.vehicleSoc >= float64(lp.SoC.Target)
+		lp.SoC.target > 0 &&
+		lp.SoC.target < 100 &&
+		lp.vehicleSoc >= float64(lp.SoC.target)
 }
 
 // minSocNotReached checks if minimum is configured and not reached.
 // If vehicle is not configured this will always return true
 func (lp *LoadPoint) minSocNotReached() bool {
 	return lp.vehicle != nil &&
-		lp.SoC.Min > 0 &&
-		lp.vehicleSoc < float64(lp.SoC.Min) &&
+		lp.SoC.min > 0 &&
+		lp.vehicleSoc < float64(lp.SoC.min) &&
 		lp.isNighttime()
 }
 
@@ -1049,6 +1058,12 @@ func (lp *LoadPoint) resetPVTimerIfRunning(typ ...string) {
 	lp.publishTimer(pvTimer, 0, timerInactive)
 }
 
+// scalePhasesRequired validates if fixed phase configuration matches enabled phases
+func (lp *LoadPoint) scalePhasesRequired() bool {
+	_, ok := lp.charger.(api.PhaseSwitcher)
+	return ok && lp.ConfiguredPhases != 0 && lp.ConfiguredPhases != lp.GetPhases()
+}
+
 // scalePhasesIfAvailable scales if api.PhaseSwitcher is available
 func (lp *LoadPoint) scalePhasesIfAvailable(phases int) error {
 	if lp.ConfiguredPhases != 0 {
@@ -1068,7 +1083,6 @@ func (lp *LoadPoint) setConfiguredPhases(phases int) {
 	defer lp.Unlock()
 
 	lp.ConfiguredPhases = phases
-	lp.phaseTimer = time.Time{}
 
 	// publish 1p3p capability and phase configuration
 	if _, ok := lp.charger.(api.PhaseSwitcher); ok {
@@ -1149,13 +1163,12 @@ func (lp *LoadPoint) pvScalePhases(availablePower, minCurrent, maxCurrent float6
 
 		lp.publishTimer(phaseTimer, lp.Disable.Delay, phaseScale1p)
 
-		elapsed := lp.clock.Since(lp.phaseTimer)
-		if elapsed >= lp.Disable.Delay {
+		if elapsed := lp.clock.Since(lp.phaseTimer); elapsed >= lp.Disable.Delay {
 			lp.log.DEBUG.Printf("phase %s timer elapsed", phaseScale1p)
 			if err := lp.scalePhases(1); err == nil {
 				lp.log.DEBUG.Printf("switched phases: 1p @ %.0fW", availablePower)
 			} else {
-				lp.log.ERROR.Printf("switch phases: %v", err)
+				lp.log.ERROR.Println(err)
 			}
 			return true
 		}
@@ -1178,13 +1191,12 @@ func (lp *LoadPoint) pvScalePhases(availablePower, minCurrent, maxCurrent float6
 
 		lp.publishTimer(phaseTimer, lp.Enable.Delay, phaseScale3p)
 
-		elapsed := lp.clock.Since(lp.phaseTimer)
-		if elapsed >= lp.Enable.Delay {
+		if elapsed := lp.clock.Since(lp.phaseTimer); elapsed >= lp.Enable.Delay {
 			lp.log.DEBUG.Printf("phase %s timer elapsed", phaseScale3p)
 			if err := lp.scalePhases(3); err == nil {
 				lp.log.DEBUG.Printf("switched phases: 3p @ %.0fW", availablePower)
 			} else {
-				lp.log.ERROR.Printf("switch phases: %v", err)
+				lp.log.ERROR.Println(err)
 			}
 			return true
 		}
@@ -1462,12 +1474,12 @@ func (lp *LoadPoint) publishSoCAndRange() {
 			lp.publish("vehicleSoC", lp.vehicleSoc)
 
 			if lp.charging() {
-				lp.setRemainingDuration(lp.socEstimator.RemainingChargeDuration(lp.chargePower, lp.SoC.Target))
+				lp.setRemainingDuration(lp.socEstimator.RemainingChargeDuration(lp.chargePower, lp.SoC.target))
 			} else {
 				lp.setRemainingDuration(-1)
 			}
 
-			lp.setRemainingEnergy(1e3 * lp.socEstimator.RemainingChargeEnergy(lp.SoC.Target))
+			lp.setRemainingEnergy(1e3 * lp.socEstimator.RemainingChargeEnergy(lp.SoC.target))
 
 			// range
 			if vs, ok := lp.vehicle.(api.VehicleRange); ok {
@@ -1575,8 +1587,13 @@ func (lp *LoadPoint) Update(sitePower float64, cheap, batteryBuffered bool) {
 		// https://github.com/evcc-io/evcc/issues/105
 		err = lp.setLimit(0, false)
 
+	case lp.scalePhasesRequired():
+		if err = lp.scalePhases(lp.ConfiguredPhases); err == nil {
+			lp.log.DEBUG.Printf("switched phases: %dp", lp.ConfiguredPhases)
+		}
+
 	case lp.targetSocReached():
-		lp.log.DEBUG.Printf("targetSoC reached: %.1f > %d", lp.vehicleSoc, lp.SoC.Target)
+		lp.log.DEBUG.Printf("targetSoC reached: %.1f > %d", lp.vehicleSoc, lp.SoC.target)
 		var targetCurrent float64 // zero disables
 		if lp.climateActive() {
 			lp.log.DEBUG.Println("climater active")
@@ -1643,7 +1660,7 @@ func (lp *LoadPoint) Update(sitePower float64, cheap, batteryBuffered bool) {
 
 	// Wake-up checks
 	if lp.enabled && lp.status == api.StatusB &&
-		int(lp.vehicleSoc) < lp.SoC.Target && lp.wakeUpTimer.Expired() {
+		int(lp.vehicleSoc) < lp.SoC.target && lp.wakeUpTimer.Expired() {
 		lp.wakeUpVehicle()
 	}
 
