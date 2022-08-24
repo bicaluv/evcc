@@ -439,7 +439,6 @@ func (lp *LoadPoint) evVehicleDisconnectHandler() {
 	// remove active vehicle if not default
 	if lp.vehicle != lp.defaultVehicle {
 		lp.setActiveVehicle(lp.defaultVehicle)
-		lp.unpublishVehicle()
 	}
 
 	// set default mode on disconnect
@@ -535,6 +534,11 @@ func (lp *LoadPoint) Prepare(uiChan chan<- util.Param, pushChan chan<- push.Even
 	lp.publish(phasesActive, lp.activePhases())
 	lp.publishTimer(phaseTimer, 0, timerInactive)
 	lp.publishTimer(pvTimer, 0, timerInactive)
+
+	// assign and publish default vehicle
+	if lp.defaultVehicle != nil {
+		lp.setActiveVehicle(lp.defaultVehicle)
+	}
 
 	lp.Lock()
 	lp.publish("mode", lp.Mode)
