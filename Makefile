@@ -136,11 +136,15 @@ raspberrypi:
 	# make raspberry version
 	env GOOS=linux GOARCH=arm go build -v $(BUILD_TAGS) $(BUILD_ARGS)
 	
+	scp -B evcc pi@raspberrypi:~/bin/evcc_new
+
+	# prepare restart of service
+	ssh pi@raspberrypi 'sudo sysctl -w net.ipv4.ping_group_range="0 2147483647"; sudo chmod 0755 ~/bin/evcc_new;'
+
 	# stop already running service and copy new evcc to raspberry
-	ssh pi@raspberrypi 'sudo systemctl stop evcc.service; mv ~/bin/evcc ~/bin/evcc_prev'
-	scp -B evcc pi@raspberrypi:~/bin/evcc
+	ssh pi@raspberrypi 'mv ~/bin/evcc ~/bin/evcc_prev; mv ~/bin/evcc_new ~/bin/evcc; sudo systemctl restart evcc.service;'
 	# chmod and start service
-	ssh pi@raspberrypi 'sudo sysctl -w net.ipv4.ping_group_range="0 2147483647"; sudo chmod 0755 ~/bin/evcc; sudo systemctl start evcc.service'
+	# ssh pi@raspberrypi 'sudo sysctl -w net.ipv4.ping_group_range="0 2147483647"; sudo chmod 0755 ~/bin/evcc; sudo systemctl start evcc.service'
 
 sync-with-andig-and-deploy:
 	# show commits in browser
