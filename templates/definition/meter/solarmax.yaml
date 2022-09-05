@@ -1,8 +1,9 @@
-template: huawei-dongle
+template: solarmax
+covers: ["solarmax"]
 products:
-  - brand: Huawei
+  - brand: Solarmax
     description:
-      generic: SUN2000 with SDongle
+      generic: Inverter
 params:
   - name: usage
     choice: ["pv"]
@@ -10,13 +11,12 @@ params:
     choice: ["tcpip"]
 render: |
   type: custom
+  {{- if eq .usage "pv" }}
   power:
     source: modbus
     {{- include "modbus" . | indent 2 }}
-    model: huawei
-    timeout: 15s
-    connectdelay: 1s
     register:
-      address: 32080 # Active generation power AC
+      address: 4151 # Total DC power
       type: holding
-      decode: int32
+      decode: uint32s
+  {{- end }}
