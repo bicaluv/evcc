@@ -141,15 +141,14 @@ raspberrypi:
 	# make raspberry version
 	env GOOS=linux GOARCH=arm go build -v $(BUILD_TAGS) $(BUILD_ARGS)
 	
+	# copy new evcc to raspberry
 	scp -B evcc pi@raspberrypi:~/bin/evcc_new
 
 	# prepare restart of service
 	ssh pi@raspberrypi 'sudo sysctl -w net.ipv4.ping_group_range="0 2147483647"; sudo chmod 0755 ~/bin/evcc_new;'
 
-	# stop already running service and copy new evcc to raspberry
+	# rename new/old evcc and restart already running service 
 	ssh pi@raspberrypi 'mv ~/bin/evcc ~/bin/evcc_prev; mv ~/bin/evcc_new ~/bin/evcc; sudo systemctl restart evcc.service;'
-	# chmod and start service
-	# ssh pi@raspberrypi 'sudo sysctl -w net.ipv4.ping_group_range="0 2147483647"; sudo chmod 0755 ~/bin/evcc; sudo systemctl start evcc.service'
 
 sync-with-andig-and-deploy:
 	# show commits in browser
@@ -158,7 +157,7 @@ sync-with-andig-and-deploy:
 	@read line; if [ "$$line" != "Y" ]; then echo aborting; exit 1 ; fi
 	@echo building...
 
-	# follwoing may show error if remote upstream alread configured
+	# following may show error if remote upstream alread configured
 	# git remote add upstream https://github.com/andig/evcc.git
 	# show github remote streams
 	git remote -v
@@ -179,5 +178,6 @@ sync-with-andig-and-deploy:
 	git add -A
 	git commit -am "merge with evcc upstream"
 	git push origin master
+	
 	# update sync detection file
 	ssh pi@raspberrypi 'sudo echo -1 > ~/etc/check_fork.state'
