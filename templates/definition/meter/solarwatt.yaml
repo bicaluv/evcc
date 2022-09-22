@@ -1,5 +1,5 @@
 template: solarwatt
-covers: [solarwatt-myreserve]
+covers: ["solarwatt-myreserve"]
 products:
   - brand: Solarwatt
     description:
