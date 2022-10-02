@@ -1,0 +1,6 @@
+image: golang:1.16
+
+test:
+    script:
+      - go test -coverprofile coverage.txt -race -v ./...
+      - go tool cover -func=coverage.txt
