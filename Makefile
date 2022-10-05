@@ -173,6 +173,7 @@ sync-with-andig-and-deploy:
 	# delete dist folder changes
 	git restore dist
 	git clean -d -f dist
+
 	# push new files
 	git add -A
 	git commit -am "merge with evcc upstream"
