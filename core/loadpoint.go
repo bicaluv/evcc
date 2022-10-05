@@ -12,6 +12,7 @@ import (
 
 	"github.com/evcc-io/evcc/api"
 	"github.com/evcc-io/evcc/core/coordinator"
+	"github.com/evcc-io/evcc/core/db"
 	"github.com/evcc-io/evcc/core/loadpoint"
 	"github.com/evcc-io/evcc/core/soc"
 	"github.com/evcc-io/evcc/core/wrapper"
@@ -160,6 +161,10 @@ type LoadPoint struct {
 	chargeRemainingDuration time.Duration // Remaining charge duration
 	chargeRemainingEnergy   float64       // Remaining charge energy in Wh
 	progress                *Progress     // Step-wise progress indicator
+
+	// session log
+	db  db.Database
+	txn *db.Transaction
 
 	tasks queues.Queue // tasks to be executed
 }
@@ -385,6 +390,8 @@ func (lp *LoadPoint) evChargeStartHandler() {
 
 	// soc update reset
 	lp.socUpdated = time.Time{}
+
+	lp.startTxn()
 }
 
 // evChargeStopHandler sends external stop event
@@ -400,6 +407,8 @@ func (lp *LoadPoint) evChargeStopHandler() {
 	if !lp.pvTimer.Equal(elapsed) {
 		lp.resetPVTimerIfRunning()
 	}
+
+	lp.stopTxn()
 }
 
 // evVehicleConnectHandler sends external start event
@@ -465,6 +474,8 @@ func (lp *LoadPoint) evVehicleDisconnectHandler() {
 
 	// reset timer when vehicle is removed
 	lp.socTimer.Reset()
+
+	lp.finalizeTxn()
 }
 
 // evVehicleSoCProgressHandler sends external start event
@@ -916,6 +927,7 @@ func (lp *LoadPoint) setActiveVehicle(vehicle api.Vehicle) {
 	lp.Lock()
 
 	lp.unpublishVehicle()
+	lp.updateTxn()
 }
 
 func (lp *LoadPoint) wakeUpVehicle() {

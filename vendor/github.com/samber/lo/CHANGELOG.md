@@ -2,6 +2,33 @@
 
 @samber: I sometimes forget to update this file. Ping me on [Twitter](https://twitter.com/samuelberthe) or open an issue in case of error. We need to keep a clear changelog for easier lib upgrade.
 
+## 1.30.0 (2022-10-04)
+
+Adding:
+
+- lo.TernaryF
+- lo.Validate
+
+## 1.29.0 (2022-10-02)
+
+Adding:
+
+- lo.ErrorAs
+- lo.TryOr
+- lo.TryOrX
+
+## 1.28.0 (2022-09-05)
+
+Adding:
+
+- lo.ChannelDispatcher with 6 dispatching strategies:
+  - lo.DispatchingStrategyRoundRobin
+  - lo.DispatchingStrategyRandom
+  - lo.DispatchingStrategyWeightedRandom
+  - lo.DispatchingStrategyFirst
+  - lo.DispatchingStrategyLeast
+  - lo.DispatchingStrategyMost
+
 ## 1.27.1 (2022-08-15)
 
 Bugfix:
