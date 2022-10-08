@@ -155,8 +155,8 @@ func sessionHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var res db.Transactions
-	if txn := dbserver.Instance.Where("charged_kwh>0").Order("created desc").Find(&res); txn.Error != nil {
+	var res db.Sessions
+	if txn := dbserver.Instance.Where("charged_kwh>=0.05").Order("created desc").Find(&res); txn.Error != nil {
 		jsonError(w, http.StatusInternalServerError, txn.Error)
 		return
 	}

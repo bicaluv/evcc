@@ -11,46 +11,51 @@ import (
 	"github.com/fatih/structs"
 )
 
-// Transaction is a single charging transaction
-type Transaction struct {
-	ID            uint      `json:"-" gorm:"primarykey"`
+// Session is a single charging session
+type Session struct {
+	ID            uint      `json:"-" csv:"-" gorm:"primarykey"`
 	Created       time.Time `json:"created"`
 	Finished      time.Time `json:"finished"`
 	Loadpoint     string    `json:"loadpoint"`
 	Identifier    string    `json:"identifier"`
 	Vehicle       string    `json:"vehicle"`
-	MeterStart    float64   `json:"meterStart" gorm:"column:meter_start_kwh"`
-	MeterStop     float64   `json:"meterStop" gorm:"column:meter_end_kwh"`
-	ChargedEnergy float64   `json:"chargedEnergy" gorm:"column:charged_kwh"`
+	MeterStart    float64   `json:"meterStart" csv:"Meter Start (kWh)" gorm:"column:meter_start_kwh"`
+	MeterStop     float64   `json:"meterStop" csv:"Meter Stop (kWh)" gorm:"column:meter_end_kwh"`
+	ChargedEnergy float64   `json:"chargedEnergy" csv:"Charged Energy (kWh)" gorm:"column:charged_kwh"`
 }
 
 // Stop stops charging session with end meter reading and due total amount
-func (t *Transaction) Stop(chargedWh, total float64) {
+func (t *Session) Stop(chargedWh, total float64) {
 	t.ChargedEnergy = chargedWh / 1e3
 	t.MeterStop = total
 	t.Finished = time.Now()
 }
 
-// Transactions is a list of transactions
-type Transactions []Transaction
+// Sessions is a list of sessions
+type Sessions []Session
 
-var _ api.CsvWriter = (*Transactions)(nil)
+var _ api.CsvWriter = (*Sessions)(nil)
 
-func (t *Transactions) writeHeader(ww *csv.Writer) {
+func (t *Sessions) writeHeader(ww *csv.Writer) {
 	var row []string
-	for _, f := range structs.Fields(Transaction{}) {
-		if f.Tag("json") == "-" {
+	for _, f := range structs.Fields(Session{}) {
+		caption := f.Tag("csv")
+		switch {
+		case caption == "-":
 			continue
+		case caption == "":
+			caption = f.Name()
 		}
-		row = append(row, f.Name())
+
+		row = append(row, caption)
 	}
 	_ = ww.Write(row)
 }
 
-func (t *Transactions) writeRow(ww *csv.Writer, r Transaction) {
+func (t *Sessions) writeRow(ww *csv.Writer, r Session) {
 	var row []string
 	for _, f := range structs.Fields(r) {
-		if f.Tag("json") == "-" {
+		if f.Tag("csv") == "-" {
 			continue
 		}
 
@@ -69,11 +74,12 @@ func (t *Transactions) writeRow(ww *csv.Writer, r Transaction) {
 
 		row = append(row, val)
 	}
+
 	_ = ww.Write(row)
 }
 
 // WriteCsv implements the api.CsvWriter interface
-func (t *Transactions) WriteCsv(w io.Writer) {
+func (t *Sessions) WriteCsv(w io.Writer) {
 	ww := csv.NewWriter(w)
 	t.writeHeader(ww)
 
