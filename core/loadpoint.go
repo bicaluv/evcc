@@ -442,6 +442,9 @@ func (lp *LoadPoint) evVehicleConnectHandler() {
 func (lp *LoadPoint) evVehicleDisconnectHandler() {
 	lp.log.INFO.Println("car disconnected")
 
+	// ensure session is persisted before vehicle is changed
+	lp.stopSession()
+
 	// phases are unknown when vehicle disconnects
 	lp.resetMeasuredPhases()
 
