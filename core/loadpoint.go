@@ -20,7 +20,6 @@ import (
 	"github.com/evcc-io/evcc/push"
 	"github.com/evcc-io/evcc/util"
 	"github.com/keep94/sunrise"
-	"golang.org/x/exp/slices"
 
 	evbus "github.com/asaskevich/EventBus"
 	"github.com/avast/retry-go/v3"
@@ -835,15 +834,18 @@ func (lp *LoadPoint) selectVehicleByID(id string) api.Vehicle {
 
 	// find exact match
 	for _, vehicle := range vehicles {
-		if slices.Contains(vehicle.Identifiers(), id) {
-			return vehicle
+		for _, vid := range vehicle.Identifiers() {
+			if strings.EqualFold(id, vid) {
+				return vehicle
+			}
 		}
 	}
 
 	// find placeholder match
 	for _, vehicle := range vehicles {
 		for _, vid := range vehicle.Identifiers() {
-			re, err := regexp.Compile(strings.ReplaceAll(vid, "*", ".*?"))
+			// case insensitive match
+			re, err := regexp.Compile("(?i)" + strings.ReplaceAll(vid, "*", ".*?"))
 			if err != nil {
 				lp.log.ERROR.Printf("vehicle id: %v", err)
 				continue
