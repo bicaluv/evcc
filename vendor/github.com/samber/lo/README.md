@@ -47,11 +47,23 @@ import (
 Then use one of the helpers below:
 
 ```go
-names := lo.Uniq[string]([]string{"Samuel", "Marc", "Samuel"})
-// []string{"Samuel", "Marc"}
+names := lo.Uniq[string]([]string{"Samuel", "John", "Samuel"})
+// []string{"Samuel", "John"}
 ```
 
 Most of the time, the compiler will be able to infer the type so that you can call: `lo.Uniq([]string{...})`.
+
+### Tips for lazy developers
+
+I cannot recommend it, but in case you are too lazy for repeating `lo.` everywhere, you can import the entire library into the namespace.
+
+```go
+import (
+    . "github.com/samber/lo"
+)
+```
+
+I take no responsibility on this junk. 😁 💩
 
 ## 🤠 Spec
 
@@ -73,6 +85,7 @@ Supported helpers for slices:
 - [Chunk](#chunk)
 - [PartitionBy](#partitionby)
 - [Flatten](#flatten)
+- [Interleave](#interleave)
 - [Shuffle](#shuffle)
 - [Reverse](#reverse)
 - [Fill](#fill)
@@ -87,6 +100,8 @@ Supported helpers for slices:
 - [Reject](#reject)
 - [Count](#count)
 - [CountBy](#countby)
+- [CountValues](#countvalues)
+- [CountValuesBy](#countvaluesby)
 - [Subset](#subset)
 - [Slice](#slice)
 - [Replace](#replace)
@@ -111,12 +126,14 @@ Supported helpers for maps:
 - [Assign (merge of maps)](#assign)
 - [MapKeys](#mapkeys)
 - [MapValues](#mapvalues)
+- [MapEntries](#mapentries)
 - [MapToSlice](#maptoslice)
 
 Supported math helpers:
 
 - [Range / RangeFrom / RangeWithSteps](#range--rangefrom--rangewithsteps)
 - [Clamp](#clamp)
+- [Sum](#sum)
 - [SumBy](#sumby)
 
 Supported helpers for strings:
@@ -135,6 +152,11 @@ Supported helpers for tuples:
 Supported helpers for channels:
 
 - [ChannelDispatcher](#channeldispatcher)
+- [SliceToChannel](#slicetochannel)
+- [Generator](#generator)
+- [Batch](#batch)
+- [BatchWithTimeout](#batchwithtimeout)
+- [ChannelMerge](#channelmerge)
 
 Supported intersection helpers:
 
@@ -491,6 +513,20 @@ flat := lo.Flatten[int]([][]int{{0, 1}, {2, 3, 4, 5}})
 
 [[play](https://go.dev/play/p/rbp9ORaMpjw)]
 
+### Interleave
+
+Round-robbin alternating input slices and sequentially appending value at index into result.
+
+```go
+interleaved := lo.Interleave[int]([]int{1, 4, 7}, []int{2, 5, 8}, []int{3, 6, 9})
+// []int{1, 2, 3, 4, 5, 6, 7, 8, 9}
+
+interleaved := lo.Interleave[int]([]int{1}, []int{2, 5, 8}, []int{3, 6}, []int{4, 7, 9, 10})
+// []int{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}
+```
+
+[[play](https://go.dev/play/p/DDhlwrShbwe)]
+
 ### Shuffle
 
 Returns an array of shuffled values. Uses the Fisher-Yates shuffle algorithm.
@@ -559,12 +595,12 @@ Builds a slice with values returned by N calls of callback.
 slice := lo.RepeatBy[string](0, func (i int) string {
     return strconv.FormatInt(int64(math.Pow(float64(i), 2)), 10)
 })
-// []int{}
+// []string{}
 
 slice := lo.RepeatBy[string](5, func(i int) string {
     return strconv.FormatInt(int64(math.Pow(float64(i), 2)), 10)
 })
-// []int{0, 1, 4, 9, 16}
+// []string{"0", "1", "4", "9", "16"}
 ```
 
 [[play](https://go.dev/play/p/ozZLCtX_hNU)]
@@ -697,6 +733,60 @@ count := lo.CountBy[int]([]int{1, 5, 1}, func(i int) bool {
 ```
 
 [[play](https://go.dev/play/p/ByQbNYQQi4X)]
+
+### CountValues
+
+Counts the number of each element in the collection.
+
+```go
+lo.CountValues([]int{})
+// map[int]int{}
+
+lo.CountValues([]int{1, 2})
+// map[int]int{1: 1, 2: 1}
+
+lo.CountValues([]int{1, 2, 2})
+// map[int]int{1: 1, 2: 2}
+
+lo.CountValues([]string{"foo", "bar", ""})
+// map[string]int{"": 1, "foo": 1, "bar": 1}
+
+lo.CountValues([]string{"foo", "bar", "bar"})
+// map[string]int{"foo": 1, "bar": 2}
+```
+
+[[play](https://go.dev/play/p/-p-PyLT4dfy)]
+
+### CountValuesBy
+
+Counts the number of each element in the collection. It ss equivalent to chaining lo.Map and lo.CountValues.
+
+```go
+isEven := func(v int) bool {
+    return v%2==0
+}
+
+lo.CountValuesBy([]int{}, isEven)
+// map[bool]int{}
+
+lo.CountValuesBy([]int{1, 2}, isEven)
+// map[bool]int{false: 1, true: 1}
+
+lo.CountValuesBy([]int{1, 2, 2}, isEven)
+// map[bool]int{false: 1, true: 2}
+
+length := func(v string) int {
+    return len(v)
+}
+
+lo.CountValuesBy([]string{"foo", "bar", ""}, length)
+// map[int]int{0: 1, 3: 2}
+
+lo.CountValuesBy([]string{"foo", "bar", "bar"}, length)
+// map[int]int{3: 3}
+```
+
+[[play](https://go.dev/play/p/2U0dG1SnOmS)]
 
 ### Subset
 
@@ -1002,6 +1092,21 @@ m2 := lo.MapValues[int, int64, string](m1, func(x int64, _ int) string {
 
 [[play](https://go.dev/play/p/T_8xAfvcf0W)]
 
+### MapEntries
+
+Manipulates a map entries and transforms it to a map of another type.
+
+```go
+in := map[string]int{"foo": 1, "bar": 2}
+
+out := lo.MapEntries(in, func(k string, v int) (int, string) {
+    return v,k
+})
+// map[int]string{1: "foo", 2: "bar"}
+```
+
+[[play](https://go.dev/play/p/VuvNQzxKimT)]
+
 ### MapToSlice
 
 Transforms a map into a slice based on specific iteratee.
@@ -1022,28 +1127,28 @@ s := lo.MapToSlice(m, func(k int, v int64) string {
 Creates an array of numbers (positive and/or negative) progressing from start up to, but not including end.
 
 ```go
-result := Range(4)
+result := lo.Range(4)
 // [0, 1, 2, 3]
 
-result := Range(-4)
+result := lo.Range(-4)
 // [0, -1, -2, -3]
 
-result := RangeFrom(1, 5)
+result := lo.RangeFrom(1, 5)
 // [1, 2, 3, 4, 5]
 
-result := RangeFrom[float64](1.0, 5)
+result := lo.RangeFrom[float64](1.0, 5)
 // [1.0, 2.0, 3.0, 4.0, 5.0]
 
-result := RangeWithSteps(0, 20, 5)
+result := lo.RangeWithSteps(0, 20, 5)
 // [0, 5, 10, 15]
 
-result := RangeWithSteps[float32](-1.0, -4.0, -1.0)
+result := lo.RangeWithSteps[float32](-1.0, -4.0, -1.0)
 // [-1.0, -2.0, -3.0]
 
-result := RangeWithSteps(1, 4, -1)
+result := lo.RangeWithSteps(1, 4, -1)
 // []
 
-result := Range(0)
+result := lo.Range(0)
 // []
 ```
 
@@ -1066,9 +1171,24 @@ r3 := lo.Clamp(42, -10, 10)
 
 [[play](https://go.dev/play/p/RU4lJNC2hlI)]
 
+### Sum
+
+Sums the values in a collection.
+
+If collection is empty 0 is returned.
+
+```go
+list := []int{1, 2, 3, 4, 5}
+sum := lo.Sum(list)
+// 15
+```
+
+[[play](https://go.dev/play/p/upfeJVqs4Bt)]
+
 ### SumBy
 
 Summarizes the values in a collection using the given return value from the iteration function.
+
 If collection is empty 0 is returned.
 
 ```go
@@ -1137,13 +1257,15 @@ sub := len("hellô")
 Creates a tuple from a list of values.
 
 ```go
-tuple1 := lo.T2[string, int]("x", 1)
+tuple1 := lo.T2("x", 1)
 // Tuple2[string, int]{A: "x", B: 1}
 
 func example() (string, int) { return "y", 2 }
-tuple2 := lo.T2[string, int](example())
+tuple2 := lo.T2(example())
 // Tuple2[string, int]{A: "y", B: 2}
 ```
+
+[[play](https://go.dev/play/p/IllL3ZO4BQm)]
 
 ### Unpack2 -> Unpack9
 
@@ -1153,6 +1275,16 @@ Returns values contained in tuple.
 r1, r2 := lo.Unpack2[string, int](lo.Tuple2[string, int]{"a", 1})
 // "a", 1
 ```
+
+Unpack is also available as a method of TupleX.
+
+```go
+tuple2 := lo.T2("a", 1)
+a, b := tuple2.Unpack()
+// "a" 1
+```
+
+[[play](https://go.dev/play/p/xVP_k0kJ96W)]
 
 ### Zip2 -> Zip9
 
@@ -1165,6 +1297,8 @@ tuples := lo.Zip2[string, int]([]string{"a", "b"}, []int{1, 2})
 // []Tuple2[string, int]{{A: "a", B: 1}, {A: "b", B: 2}}
 ```
 
+[[play](https://go.dev/play/p/jujaA6GaJTp)]
+
 ### Unzip2 -> Unzip9
 
 Unzip accepts an array of grouped elements and creates an array regrouping the elements to their pre-zip configuration.
@@ -1174,6 +1308,8 @@ a, b := lo.Unzip2[string, int]([]Tuple2[string, int]{{A: "a", B: 1}, {A: "b", B:
 // []string{"a", "b"}
 // []int{1, 2}
 ```
+
+[[play](https://go.dev/play/p/ciHugugvaAW)]
 
 ### ChannelDispatcher
 
@@ -1214,7 +1350,7 @@ Many distributions strategies are available:
 - [lo.DispatchingStrategyWeightedRandom](./channel.go): Distributes messages in a weighted manner.
 - [lo.DispatchingStrategyFirst](./channel.go): Distributes messages in the first non-full channel.
 - [lo.DispatchingStrategyLeast](./channel.go): Distributes messages in the emptiest channel.
-- [lo.DispatchingStrategyMost](./channel.go): Distributes to the fulliest channel.
+- [lo.DispatchingStrategyMost](./channel.go): Distributes to the fullest channel.
 
 Some strategies bring fallback, in order to favor non-blocking behaviors. See implementations.
 
@@ -1252,6 +1388,158 @@ customStrategy := func(message pubsub.AMQPSubMessage, messageIndex uint64, chann
 
 children := lo.ChannelDispatcher(ch, 5, 10, customStrategy)
 ...
+```
+
+### SliceToChannel
+
+Returns a read-only channels of collection elements. Channel is closed after last element. Channel capacity can be customized.
+
+```go
+list := []int{1, 2, 3, 4, 5}
+
+for v := range lo.SliceToChannel(2, list) {
+    println(v)
+}
+// prints 1, then 2, then 3, then 4, then 5
+```
+
+### ChannelToSlice
+
+Returns a slice built from channels items. Blocks until channel closes.
+
+```go
+list := []int{1, 2, 3, 4, 5}
+ch := lo.SliceToChannel(2, list)
+
+items := ChannelToSlice(ch)
+// []int{1, 2, 3, 4, 5}
+```
+
+### Generator
+
+Implements the generator design pattern. Channel is closed after last element. Channel capacity can be customized.
+
+```go
+generator := func(yield func(int)) {
+    yield(1)
+    yield(2)
+    yield(3)
+}
+
+for v := range lo.Generator(2, generator) {
+    println(v)
+}
+// prints 1, then 2, then 3
+```
+
+### Batch
+
+Creates a slice of n elements from a channel. Returns the slice, the slice length, the read time and the channel status (opened/closed).
+
+```go
+ch := lo.SliceToChannel(2, []int{1, 2, 3, 4, 5})
+
+items1, length1, duration1, ok1 := lo.Batch(ch, 3)
+// []int{1, 2, 3}, 3, 0s, true
+items2, length2, duration2, ok2 := lo.Batch(ch, 3)
+// []int{4, 5}, 2, 0s, false
+```
+
+Example: RabbitMQ consumer 👇
+
+```go
+ch := readFromQueue()
+
+for {
+    // read 1k items
+    items, length, _, ok := lo.Batch(ch, 1000)
+
+    // do batching stuff
+
+    if !ok {
+        break
+    }
+}
+```
+
+### BatchWithTimeout
+
+Creates a slice of n elements from a channel, with timeout. Returns the slice, the slice length, the read time and the channel status (opened/closed).
+
+```go
+generator := func(yield func(int)) {
+    for i := 0; i < 5; i++ {
+        yield(i)
+        time.Sleep(35*time.Millisecond)
+    }
+}
+
+ch := lo.Generator(0, generator)
+
+items1, length1, duration1, ok1 := lo.BatchWithTimeout(ch, 3, 100*time.Millisecond)
+// []int{1, 2}, 2, 100ms, true
+items2, length2, duration2, ok2 := lo.BatchWithTimeout(ch, 3, 100*time.Millisecond)
+// []int{3, 4, 5}, 3, 75ms, true
+items3, length3, duration2, ok3 := lo.BatchWithTimeout(ch, 3, 100*time.Millisecond)
+// []int{}, 0, 10ms, false
+```
+
+Example: RabbitMQ consumer 👇
+
+```go
+ch := readFromQueue()
+
+for {
+    // read 1k items
+    // wait up to 1 second
+    items, length, _, ok := lo.BatchWithTimeout(ch, 1000, 1*time.Second)
+
+    // do batching stuff
+
+    if !ok {
+        break
+    }
+}
+```
+
+Example: Multithreaded RabbitMQ consumer 👇
+
+```go
+ch := readFromQueue()
+
+// 5 workers
+// prefetch 1k messages per worker
+children := lo.ChannelDispatcher(ch, 5, 1000, DispatchingStrategyFirst[int])
+
+consumer := func(c <-chan int) {
+    for {
+        // read 1k items
+        // wait up to 1 second
+        items, length, _, ok := lo.BatchWithTimeout(ch, 1000, 1*time.Second)
+
+        // do batching stuff
+
+        if !ok {
+            break
+        }
+    }
+}
+
+for i := range children {
+    go consumer(children[i])
+}
+```
+
+### ChannelMerge
+
+Collects messages from multiple input channels into a single buffered channel. Output messages has no priority.
+
+```go
+stream1 := make(chan int, 42)
+stream2 := make(chan int, 42)
+stream3 := make(chan int, 42)
+
+all := lo.ChannelMerge(100, stream1, stream2, stream3)
 ```
 
 ### Contains
@@ -1532,7 +1820,7 @@ uniqueValues := lo.FindUniquesBy[int, int]([]int{3, 4, 5, 6, 7}, func(i int) int
 
 ### FindDuplicates
 
-Returns a slice with the first occurence of each duplicated elements of the collection. The order of result values is determined by the order they occur in the array.
+Returns a slice with the first occurrence of each duplicated elements of the collection. The order of result values is determined by the order they occur in the array.
 
 ```go
 duplicatedValues := lo.FindDuplicates[int]([]int{1, 2, 2, 1, 2, 3})
@@ -1541,7 +1829,7 @@ duplicatedValues := lo.FindDuplicates[int]([]int{1, 2, 2, 1, 2, 3})
 
 ### FindDuplicatesBy
 
-Returns a slice with the first occurence of each duplicated elements of the collection. The order of result values is determined by the order they occur in the array. It accepts `iteratee` which is invoked for each element in array to generate the criterion by which uniqueness is computed.
+Returns a slice with the first occurrence of each duplicated elements of the collection. The order of result values is determined by the order they occur in the array. It accepts `iteratee` which is invoked for each element in array to generate the criterion by which uniqueness is computed.
 
 ```go
 duplicatedValues := lo.FindDuplicatesBy[int, int]([]int{3, 4, 5, 6, 7}, func(i int) int {
@@ -1554,26 +1842,31 @@ duplicatedValues := lo.FindDuplicatesBy[int, int]([]int{3, 4, 5, 6, 7}, func(i i
 
 Search the minimum value of a collection.
 
+Returns zero value when collection is empty.
+
 ```go
-min := lo.Min[int]([]int{1, 2, 3})
+min := lo.Min([]int{1, 2, 3})
 // 1
 
-min := lo.Min[int]([]int{})
+min := lo.Min([]int{})
 // 0
 ```
 
 ### MinBy
 
 Search the minimum value of a collection using the given comparison function.
+
 If several values of the collection are equal to the smallest value, returns the first such value.
 
+Returns zero value when collection is empty.
+
 ```go
-min := lo.MinBy[string]([]string{"s1", "string2", "s3"}, func(item string, min string) bool {
+min := lo.MinBy([]string{"s1", "string2", "s3"}, func(item string, min string) bool {
     return len(item) < len(min)
 })
 // "s1"
 
-min := lo.MinBy[string]([]string{}, func(item string, min string) bool {
+min := lo.MinBy([]string{}, func(item string, min string) bool {
     return len(item) < len(min)
 })
 // ""
@@ -1583,26 +1876,31 @@ min := lo.MinBy[string]([]string{}, func(item string, min string) bool {
 
 Search the maximum value of a collection.
 
+Returns zero value when collection is empty.
+
 ```go
-max := lo.Max[int]([]int{1, 2, 3})
+max := lo.Max([]int{1, 2, 3})
 // 3
 
-max := lo.Max[int]([]int{})
+max := lo.Max([]int{})
 // 0
 ```
 
 ### MaxBy
 
 Search the maximum value of a collection using the given comparison function.
+
 If several values of the collection are equal to the greatest value, returns the first such value.
 
+Returns zero value when collection is empty.
+
 ```go
-max := lo.MaxBy[string]([]string{"string1", "s2", "string3"}, func(item string, max string) bool {
+max := lo.MaxBy([]string{"string1", "s2", "string3"}, func(item string, max string) bool {
     return len(item) > len(max)
 })
 // "string1"
 
-max := lo.MaxBy[string]([]string{}, func(item string, max string) bool {
+max := lo.MaxBy([]string{}, func(item string, max string) bool {
     return len(item) > len(max)
 })
 // ""
@@ -1982,6 +2280,8 @@ iter, err := lo.Attempt(0, func(i int) error {
 
 For more advanced retry strategies (delay, exponential backoff...), please take a look on [cenkalti/backoff](https://github.com/cenkalti/backoff).
 
+[[play](https://go.dev/play/p/3ggJZ2ZKcMj)]
+
 ### AttemptWithDelay
 
 Invokes a function N times until it returns valid output, with a pause between each call. Returning either the caught error or nil.
@@ -2003,6 +2303,8 @@ iter, duration, err := lo.AttemptWithDelay(5, 2*time.Second, func(i int, duratio
 
 For more advanced retry strategies (delay, exponential backoff...), please take a look on [cenkalti/backoff](https://github.com/cenkalti/backoff).
 
+[[play](https://go.dev/play/p/tVs6CygC7m1)]
+
 ### Debounce
 
 `NewDebounce` creates a debounced instance that delays invoking functions given until after wait milliseconds have elapsed, until `cancel` is called.
@@ -2020,6 +2322,8 @@ for j := 0; j < 10; j++ {
 time.Sleep(1 * time.Second)
 cancel()
 ```
+
+[[play](https://go.dev/play/p/mz32VMK2nqe)]
 
 ### Synchronize
 
@@ -2094,6 +2398,8 @@ val := lo.Validate(len(slice) == 0, "Slice should be empty but contains %v", sli
 // nil
 ```
 
+[[play](https://go.dev/play/p/vPyh51XpCBt)]
+
 ### Must
 
 Wraps a function call to panics if second argument is `error` or `false`, returns the value otherwise.
@@ -2106,9 +2412,11 @@ val := lo.Must(time.Parse("2006-01-02", "bad-value"))
 // panics
 ```
 
+[[play](https://go.dev/play/p/TMoWrRp3DyC)]
+
 ### Must{0->6}
 
-Must\* has the same behavior than Must, but returns multiple values.
+Must\* has the same behavior as Must, but returns multiple values.
 
 ```go
 func example0() (error)
@@ -2152,6 +2460,8 @@ lo.Must0(lo.Contains[int](list, item), "'%s' must always contain '%s'", list, it
 ...
 ```
 
+[[play](https://go.dev/play/p/TMoWrRp3DyC)]
+
 ### Try
 
 Calls the function and return false in case of error and on panic.
@@ -2174,6 +2484,8 @@ ok := lo.Try(func() error {
 // false
 ```
 
+[[play](https://go.dev/play/p/mTyyWUvn9u4)]
+
 ### Try{0->6}
 
 The same behavior than `Try`, but callback returns 2 variables.
@@ -2185,6 +2497,8 @@ ok := lo.Try2(func() (string, error) {
 })
 // false
 ```
+
+[[play](https://go.dev/play/p/mTyyWUvn9u4)]
 
 ### TryOr
 
@@ -2211,6 +2525,8 @@ ok := lo.TryOr(func() error {
 // false
 ```
 
+[[play](https://go.dev/play/p/B4F7Wg2Zh9X)]
+
 ### TryOr{0->6}
 
 The same behavior than `TryOr`, but callback returns 2 variables.
@@ -2225,6 +2541,8 @@ str, nbr, ok := lo.TryOr2(func() (string, int, error) {
 // false
 ```
 
+[[play](https://go.dev/play/p/B4F7Wg2Zh9X)]
+
 ### TryWithErrorValue
 
 The same behavior than `Try`, but also returns value passed to panic.
@@ -2236,6 +2554,8 @@ err, ok := lo.TryWithErrorValue(func() error {
 })
 // "error", false
 ```
+
+[[play](https://go.dev/play/p/Kc7afQIT2Fs)]
 
 ### TryCatch
 
@@ -2254,6 +2574,8 @@ ok := lo.TryCatch(func() error {
 // caught == true
 ```
 
+[[play](https://go.dev/play/p/PnOON-EqBiU)]
+
 ### TryCatchWithErrorValue
 
 The same behavior than `TryWithErrorValue`, but calls the catch function in case of error.
@@ -2270,6 +2592,8 @@ ok := lo.TryCatchWithErrorValue(func() error {
 // false
 // caught == true
 ```
+
+[[play](https://go.dev/play/p/8Pc9gwX_GZO)]
 
 ### ErrorsAs
 
@@ -2293,6 +2617,8 @@ if rateLimitErr, ok := lo.ErrorsAs[*RateLimitError](err); ok {
     // retry later
 }
 ```
+
+[[play](https://go.dev/play/p/8wk5rH8UfrE)]
 
 ## 🛩 Benchmark
 

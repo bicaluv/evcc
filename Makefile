@@ -180,7 +180,7 @@ sync-with-andig-and-deploy:
 	ssh pi@raspberrypi 'sudo echo -1 > ~/etc/check_fork.state'
 
 # patch asn1.go to allow Elli buggy certificates to be accepted with EEBUS
-patch-asn1-sudo::
+patch-asn1-sudo:
 	# echo $(GOROOT)
 	cat $(GOROOT)/src/vendor/golang.org/x/crypto/cryptobyte/asn1.go | grep -C 1 "out = true"
 	sudo patch -N -t -d $(GOROOT)/src/vendor/golang.org/x/crypto/cryptobyte -i $(CURRDIR)/patch/asn1.diff

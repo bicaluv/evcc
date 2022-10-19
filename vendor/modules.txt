@@ -137,7 +137,7 @@ github.com/asaskevich/EventBus
 # github.com/avast/retry-go/v3 v3.1.1
 ## explicit; go 1.13
 github.com/avast/retry-go/v3
-# github.com/aws/aws-sdk-go v1.44.111
+# github.com/aws/aws-sdk-go v1.44.118
 ## explicit; go 1.11
 github.com/aws/aws-sdk-go/aws
 github.com/aws/aws-sdk-go/aws/awserr
@@ -308,13 +308,13 @@ github.com/felixge/httpsnoop
 # github.com/foogod/go-powerwall v0.2.0 => github.com/andig/go-powerwall v0.2.1-0.20220205120646-e5220ad9a9a0
 ## explicit; go 1.17
 github.com/foogod/go-powerwall
-# github.com/fsnotify/fsnotify v1.5.4
+# github.com/fsnotify/fsnotify v1.6.0
 ## explicit; go 1.16
 github.com/fsnotify/fsnotify
-# github.com/glebarez/go-sqlite v1.19.1
+# github.com/glebarez/go-sqlite v1.19.2
 ## explicit; go 1.16
 github.com/glebarez/go-sqlite
-# github.com/glebarez/sqlite v1.4.8
+# github.com/glebarez/sqlite v1.5.0
 ## explicit; go 1.16
 github.com/glebarez/sqlite
 # github.com/go-kit/log v0.2.1
@@ -374,8 +374,8 @@ github.com/google/uuid
 ## explicit; go 1.18
 github.com/googleapis/enterprise-certificate-proxy/client
 github.com/googleapis/enterprise-certificate-proxy/client/util
-# github.com/googleapis/gax-go/v2 v2.5.1
-## explicit; go 1.18
+# github.com/googleapis/gax-go/v2 v2.6.0
+## explicit; go 1.19
 github.com/googleapis/gax-go/v2
 github.com/googleapis/gax-go/v2/apierror
 github.com/googleapis/gax-go/v2/apierror/internal/proto
@@ -622,7 +622,7 @@ github.com/prometheus/client_golang/api/prometheus/v1
 github.com/prometheus/client_golang/prometheus
 github.com/prometheus/client_golang/prometheus/internal
 github.com/prometheus/client_golang/prometheus/promhttp
-# github.com/prometheus/client_model v0.2.0
+# github.com/prometheus/client_model v0.3.0
 ## explicit; go 1.9
 github.com/prometheus/client_model/go
 # github.com/prometheus/common v0.37.0
@@ -635,7 +635,7 @@ github.com/prometheus/common/model
 github.com/prometheus/procfs
 github.com/prometheus/procfs/internal/fs
 github.com/prometheus/procfs/internal/util
-# github.com/remyoudompheng/bigfft v0.0.0-20200410134404-eec4a21b6bb0
+# github.com/remyoudompheng/bigfft v0.0.0-20220927061507-ef77025ab5aa
 ## explicit; go 1.12
 github.com/remyoudompheng/bigfft
 # github.com/rickb777/date v1.20.0
@@ -647,7 +647,7 @@ github.com/rickb777/plural
 # github.com/rivo/uniseg v0.4.2
 ## explicit; go 1.18
 github.com/rivo/uniseg
-# github.com/robertkrimen/otto v0.0.0-20211024170158-b87d35c0b86f
+# github.com/robertkrimen/otto v0.0.0-20221011175642-09fc211e5ab1
 ## explicit; go 1.14
 github.com/robertkrimen/otto
 github.com/robertkrimen/otto/ast
@@ -657,7 +657,7 @@ github.com/robertkrimen/otto/parser
 github.com/robertkrimen/otto/registry
 github.com/robertkrimen/otto/token
 github.com/robertkrimen/otto/underscore
-# github.com/samber/lo v1.30.0
+# github.com/samber/lo v1.33.0
 ## explicit; go 1.18
 github.com/samber/lo
 # github.com/shopspring/decimal v1.3.1
@@ -684,7 +684,7 @@ github.com/spf13/afero/mem
 # github.com/spf13/cast v1.5.0
 ## explicit; go 1.18
 github.com/spf13/cast
-# github.com/spf13/cobra v1.5.0
+# github.com/spf13/cobra v1.6.0
 ## explicit; go 1.15
 github.com/spf13/cobra
 # github.com/spf13/jwalterweatherman v1.1.0
@@ -760,7 +760,7 @@ go.opencensus.io/trace
 go.opencensus.io/trace/internal
 go.opencensus.io/trace/propagation
 go.opencensus.io/trace/tracestate
-# golang.org/x/crypto v0.0.0-20221005025214-4161e89ecf1b
+# golang.org/x/crypto v0.0.0-20221012134737-56aed061732a
 ## explicit; go 1.17
 golang.org/x/crypto/bcrypt
 golang.org/x/crypto/blowfish
@@ -774,7 +774,7 @@ golang.org/x/crypto/openpgp/packet
 golang.org/x/crypto/openpgp/s2k
 golang.org/x/crypto/pbkdf2
 golang.org/x/crypto/scrypt
-# golang.org/x/exp v0.0.0-20221004215720-b9f4876ce741
+# golang.org/x/exp v0.0.0-20221012211006-4de253d81b95
 ## explicit; go 1.18
 golang.org/x/exp/constraints
 golang.org/x/exp/maps
@@ -785,7 +785,7 @@ golang.org/x/mod/internal/lazyregexp
 golang.org/x/mod/modfile
 golang.org/x/mod/module
 golang.org/x/mod/semver
-# golang.org/x/net v0.0.0-20221004154528-8021a29435af
+# golang.org/x/net v0.0.0-20221017152216-f25eb7ecb193
 ## explicit; go 1.17
 golang.org/x/net/bpf
 golang.org/x/net/context
@@ -807,7 +807,7 @@ golang.org/x/net/ipv6
 golang.org/x/net/proxy
 golang.org/x/net/publicsuffix
 golang.org/x/net/trace
-# golang.org/x/oauth2 v0.0.0-20220909003341-f21342109be1
+# golang.org/x/oauth2 v0.0.0-20221014153046-6fdb5e3db783
 ## explicit; go 1.17
 golang.org/x/oauth2
 golang.org/x/oauth2/authhandler
@@ -816,11 +816,11 @@ golang.org/x/oauth2/google/internal/externalaccount
 golang.org/x/oauth2/internal
 golang.org/x/oauth2/jws
 golang.org/x/oauth2/jwt
-# golang.org/x/sync v0.0.0-20220929204114-8fcdb60fdcc0
+# golang.org/x/sync v0.1.0
 ## explicit
 golang.org/x/sync/errgroup
 golang.org/x/sync/semaphore
-# golang.org/x/sys v0.0.0-20220928140112-f11e5e49a4ec
+# golang.org/x/sys v0.1.0
 ## explicit; go 1.17
 golang.org/x/sys/execabs
 golang.org/x/sys/internal/unsafeheader
@@ -828,10 +828,10 @@ golang.org/x/sys/plan9
 golang.org/x/sys/unix
 golang.org/x/sys/windows
 golang.org/x/sys/windows/registry
-# golang.org/x/term v0.0.0-20220919170432-7a66f970e087
+# golang.org/x/term v0.0.0-20221017184919-83659145692c
 ## explicit; go 1.17
 golang.org/x/term
-# golang.org/x/text v0.3.7
+# golang.org/x/text v0.4.0
 ## explicit; go 1.17
 golang.org/x/text/currency
 golang.org/x/text/encoding
@@ -847,6 +847,8 @@ golang.org/x/text/encoding/unicode
 golang.org/x/text/internal/format
 golang.org/x/text/internal/language
 golang.org/x/text/internal/language/compact
+golang.org/x/text/internal/number
+golang.org/x/text/internal/stringset
 golang.org/x/text/internal/tag
 golang.org/x/text/internal/utf8internal
 golang.org/x/text/language
@@ -876,8 +878,8 @@ golang.org/x/tools/internal/imports
 golang.org/x/tools/internal/packagesinternal
 golang.org/x/tools/internal/typeparams
 golang.org/x/tools/internal/typesinternal
-# google.golang.org/api v0.98.0
-## explicit; go 1.15
+# google.golang.org/api v0.100.0
+## explicit; go 1.19
 google.golang.org/api/googleapi
 google.golang.org/api/googleapi/transport
 google.golang.org/api/identitytoolkit/v3
@@ -903,12 +905,12 @@ google.golang.org/appengine/internal/modules
 google.golang.org/appengine/internal/remote_api
 google.golang.org/appengine/internal/urlfetch
 google.golang.org/appengine/urlfetch
-# google.golang.org/genproto v0.0.0-20220930163606-c98284e70a91
+# google.golang.org/genproto v0.0.0-20221018160656-63c7b68cfc55
 ## explicit; go 1.19
 google.golang.org/genproto/googleapis/rpc/code
 google.golang.org/genproto/googleapis/rpc/errdetails
 google.golang.org/genproto/googleapis/rpc/status
-# google.golang.org/grpc v1.49.0
+# google.golang.org/grpc v1.50.1
 ## explicit; go 1.17
 google.golang.org/grpc
 google.golang.org/grpc/attributes
@@ -1013,7 +1015,7 @@ gopkg.in/yaml.v2
 # gopkg.in/yaml.v3 v3.0.1
 ## explicit
 gopkg.in/yaml.v3
-# gorm.io/gorm v1.23.10
+# gorm.io/gorm v1.24.0
 ## explicit; go 1.16
 gorm.io/gorm
 gorm.io/gorm/callbacks
@@ -1022,7 +1024,7 @@ gorm.io/gorm/logger
 gorm.io/gorm/migrator
 gorm.io/gorm/schema
 gorm.io/gorm/utils
-# modernc.org/libc v1.19.0
+# modernc.org/libc v1.21.0
 ## explicit; go 1.17
 modernc.org/libc
 modernc.org/libc/errno
@@ -1056,7 +1058,7 @@ modernc.org/mathutil
 # modernc.org/memory v1.4.0
 ## explicit; go 1.18
 modernc.org/memory
-# modernc.org/sqlite v1.19.1
+# modernc.org/sqlite v1.19.2
 ## explicit; go 1.17
 modernc.org/sqlite/lib
 # nhooyr.io/websocket v1.8.7
