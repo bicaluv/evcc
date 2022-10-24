@@ -279,7 +279,7 @@ github.com/emirpasic/gods/lists/arraylist
 github.com/emirpasic/gods/queues
 github.com/emirpasic/gods/queues/arrayqueue
 github.com/emirpasic/gods/utils
-# github.com/evcc-io/eebus v0.0.0-20220929204231-3e14a14e2b1c
+# github.com/evcc-io/eebus v0.0.0-20221023111026-e3c9e4d1f3c8
 ## explicit; go 1.18
 github.com/evcc-io/eebus/app
 github.com/evcc-io/eebus/cert
