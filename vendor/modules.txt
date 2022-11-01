@@ -548,7 +548,7 @@ github.com/mitchellh/mapstructure
 # github.com/mitchellh/reflectwalk v1.0.2
 ## explicit
 github.com/mitchellh/reflectwalk
-# github.com/mlnoga/rct v0.1.2-0.20220320164346-9f2daa4d6734
+# github.com/mlnoga/rct v0.1.2-0.20220320164346-9f2daa4d6734 => github.com/andig/rct v0.0.0-20221101081802-96d01efdc68c
 ## explicit; go 1.17
 github.com/mlnoga/rct
 # github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd
@@ -1069,3 +1069,4 @@ nhooyr.io/websocket/internal/errd
 nhooyr.io/websocket/internal/wsjs
 nhooyr.io/websocket/internal/xsync
 # github.com/foogod/go-powerwall => github.com/andig/go-powerwall v0.2.1-0.20220205120646-e5220ad9a9a0
+# github.com/mlnoga/rct => github.com/andig/rct v0.0.0-20221101081802-96d01efdc68c
