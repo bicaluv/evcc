@@ -27,7 +27,6 @@ import (
 	"github.com/evcc-io/evcc/util/pipe"
 	"github.com/evcc-io/evcc/util/request"
 	"github.com/evcc-io/evcc/util/sponsor"
-	"github.com/evcc-io/evcc/util/telemetry"
 	"github.com/libp2p/zeroconf/v2"
 	"github.com/samber/lo"
 	"github.com/spf13/cobra"
@@ -91,17 +90,6 @@ func configureEnvironment(cmd *cobra.Command, conf config) (err error) {
 			conf.Database.Dsn = flag.Value.String()
 		}
 		err = configureDatabase(conf.Database)
-	}
-
-	// setup telemetry
-	if err == nil {
-		err = telemetry.Create(conf.Plant)
-	}
-
-	// deprecated: enable telemetry if its in the config
-	if err == nil && conf.Telemetry {
-		log.WARN.Println("Enabling telementry in config is deprecated. Use UI instead.")
-		err = telemetry.Enable(true)
 	}
 
 	// setup mqtt client listener

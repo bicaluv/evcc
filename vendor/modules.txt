@@ -128,6 +128,9 @@ github.com/andig/gosunspec/smdx
 github.com/andig/gosunspec/spi
 github.com/andig/gosunspec/typelabel
 github.com/andig/gosunspec/typelen
+# github.com/andig/mbserver v0.0.0-20221101145037-fcaa2dfef9fb
+## explicit; go 1.18
+github.com/andig/mbserver
 # github.com/andybalholm/cascadia v1.3.1
 ## explicit; go 1.16
 github.com/andybalholm/cascadia

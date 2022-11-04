@@ -8,6 +8,7 @@ require (
 	github.com/Masterminds/sprig/v3 v3.2.2
 	github.com/PuerkitoBio/goquery v1.8.0
 	github.com/andig/gosunspec v0.0.0-20211108155140-af2e73b86e71
+	github.com/andig/mbserver v0.0.0-20221101145037-fcaa2dfef9fb
 	github.com/asaskevich/EventBus v0.0.0-20200907212545-49d423059eef
 	github.com/avast/retry-go/v3 v3.1.1
 	github.com/aws/aws-sdk-go v1.44.127
@@ -86,6 +87,7 @@ require (
 	golang.org/x/exp v0.0.0-20221031165847-c99f073a8326
 	golang.org/x/net v0.1.0
 	golang.org/x/oauth2 v0.1.0
+	golang.org/x/sync v0.1.0
 	golang.org/x/text v0.4.0
 	google.golang.org/api v0.101.0
 	google.golang.org/grpc v1.50.1
@@ -169,7 +171,6 @@ require (
 	go.opencensus.io v0.23.0 // indirect
 	golang.org/x/crypto v0.1.0 // indirect
 	golang.org/x/mod v0.6.0 // indirect
-	golang.org/x/sync v0.1.0 // indirect
 	golang.org/x/sys v0.1.0 // indirect
 	golang.org/x/term v0.1.0 // indirect
 	golang.org/x/tools v0.2.0 // indirect
