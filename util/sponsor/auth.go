@@ -20,11 +20,6 @@ func IsAuthorized() bool {
 
 // check and set sponsorship token
 func ConfigureSponsorship(token string) error {
-	if token == "_mein_token_mm_" {
-		Token = token
-		Subject = token
-		return nil
-	}
 	host := util.Getenv("GRPC_URI", cloud.Host)
 	conn, err := cloud.Connection(host)
 	if err != nil {
