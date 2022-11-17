@@ -419,6 +419,11 @@ github.com/hashicorp/hcl/hcl/token
 github.com/hashicorp/hcl/json/parser
 github.com/hashicorp/hcl/json/scanner
 github.com/hashicorp/hcl/json/token
+# github.com/hasura/go-graphql-client v0.8.1
+## explicit; go 1.16
+github.com/hasura/go-graphql-client
+github.com/hasura/go-graphql-client/ident
+github.com/hasura/go-graphql-client/internal/jsonutil
 # github.com/huandu/xstrings v1.3.3
 ## explicit; go 1.12
 github.com/huandu/xstrings
@@ -1081,5 +1086,6 @@ nhooyr.io/websocket/internal/bpool
 nhooyr.io/websocket/internal/errd
 nhooyr.io/websocket/internal/wsjs
 nhooyr.io/websocket/internal/xsync
+nhooyr.io/websocket/wsjson
 # github.com/foogod/go-powerwall => github.com/andig/go-powerwall v0.2.1-0.20220205120646-e5220ad9a9a0
 # github.com/mlnoga/rct => github.com/andig/rct v0.0.0-20221101081802-96d01efdc68c
