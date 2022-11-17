@@ -168,6 +168,8 @@ sync-with-andig-and-deploy:
 	
 	# build and deploy
 	make raspberrypi
+
+	# go mod vendor
 	
 	# delete dist folder changes
 	git restore dist
