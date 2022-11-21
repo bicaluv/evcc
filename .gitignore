@@ -30,3 +30,4 @@ fly.toml
 .idea
 vendor/*
 Raspi_backup.iso
+QEMU_EFI.fd
