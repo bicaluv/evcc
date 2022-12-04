@@ -482,6 +482,10 @@ github.com/jmespath/go-jmespath
 # github.com/joeshaw/carwings v0.0.0-20220711204617-d90801cf2848
 ## explicit; go 1.12
 github.com/joeshaw/carwings
+# github.com/joho/godotenv v1.4.0
+## explicit; go 1.12
+github.com/joho/godotenv
+github.com/joho/godotenv/autoload
 # github.com/jpfielding/go-http-digest v0.0.0-20211006141426-fbc93758452e
 ## explicit; go 1.16
 github.com/jpfielding/go-http-digest/pkg/digest
