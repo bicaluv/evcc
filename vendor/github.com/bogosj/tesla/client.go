@@ -5,7 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"io/ioutil"
+	"io"
 	"net/http"
 
 	"golang.org/x/oauth2"
@@ -20,8 +20,9 @@ var OAuth2Config = &oauth2.Config{
 	ClientID:    "ownerapi",
 	RedirectURL: "https://auth.tesla.com/void/callback",
 	Endpoint: oauth2.Endpoint{
-		AuthURL:  "https://auth.tesla.com/oauth2/v3/authorize",
-		TokenURL: "https://auth.tesla.com/oauth2/v3/token",
+		AuthURL:   "https://auth.tesla.com/oauth2/v3/authorize",
+		TokenURL:  "https://auth.tesla.com/oauth2/v3/token",
+		AuthStyle: oauth2.AuthStyleInParams,
 	},
 	Scopes: []string{"openid", "email", "offline_access"},
 }
@@ -122,15 +123,11 @@ func (c Client) processRequest(req *http.Request) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
+	defer res.Body.Close()
 	if res.StatusCode != 200 {
 		return nil, errors.New(res.Status)
 	}
-	defer res.Body.Close()
-	body, err := ioutil.ReadAll(res.Body)
-	if err != nil {
-		return nil, err
-	}
-	return body, nil
+	return io.ReadAll(res.Body)
 }
 
 // Sets the required headers for calls to the Tesla API

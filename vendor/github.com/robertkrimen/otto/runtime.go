@@ -121,7 +121,7 @@ func (self *_runtime) tryCatchEvaluate(inner func() Value) (tryValue Value, exce
 	// throw = Something was thrown
 	// throwValue = The value of what was thrown
 	// other = Something that changes flow (return, break, continue) that is not a throw
-	// Otherwise, some sort of unknown panic happened, we'll just propagate it
+	// Otherwise, some sort of unknown panic happened, we'll just propagate it.
 	defer func() {
 		if caught := recover(); caught != nil {
 			if exception, ok := caught.(*_exception); ok {
@@ -130,18 +130,18 @@ func (self *_runtime) tryCatchEvaluate(inner func() Value) (tryValue Value, exce
 			switch caught := caught.(type) {
 			case _error:
 				exception = true
-				tryValue = toValue_object(self.newError(caught.name, caught.messageValue(), 0))
+				tryValue = toValue_object(self.newErrorObjectError(caught))
 			case Value:
 				exception = true
 				tryValue = caught
 			default:
-				panic(caught)
+				exception = true
+				tryValue = toValue(caught)
 			}
 		}
 	}()
 
-	tryValue = inner()
-	return
+	return inner(), false
 }
 
 // toObject
@@ -291,6 +291,10 @@ func (self *_runtime) convertNumeric(v Value, t reflect.Type) reflect.Value {
 }
 
 func fieldIndexByName(t reflect.Type, name string) []int {
+	for t.Kind() == reflect.Ptr {
+		t = t.Elem()
+	}
+
 	for i := 0; i < t.NumField(); i++ {
 		f := t.Field(i)
 
@@ -299,8 +303,14 @@ func fieldIndexByName(t reflect.Type, name string) []int {
 		}
 
 		if f.Anonymous {
-			if a := fieldIndexByName(f.Type, name); a != nil {
-				return append([]int{i}, a...)
+			for t.Kind() == reflect.Ptr {
+				t = t.Elem()
+			}
+
+			if f.Type.Kind() == reflect.Struct {
+				if a := fieldIndexByName(f.Type, name); a != nil {
+					return append([]int{i}, a...)
+				}
 			}
 		}
 
@@ -421,7 +431,8 @@ func (self *_runtime) convertCallParameter(v Value, t reflect.Type) (reflect.Val
 
 				tt := t.Elem()
 
-				if o.class == classArray {
+				switch o.class {
+				case classArray:
 					for i := int64(0); i < l; i++ {
 						p, ok := o.property[strconv.FormatInt(i, 10)]
 						if !ok {
@@ -440,7 +451,7 @@ func (self *_runtime) convertCallParameter(v Value, t reflect.Type) (reflect.Val
 
 						s.Index(int(i)).Set(ev)
 					}
-				} else if o.class == classGoArray {
+				case classGoArray, classGoSlice:
 					var gslice bool
 					switch o.value.(type) {
 					case *_goSliceObject:
@@ -624,6 +635,11 @@ func (self *_runtime) convertCallParameter(v Value, t reflect.Type) (reflect.Val
 }
 
 func (self *_runtime) toValue(value interface{}) Value {
+	rv, ok := value.(reflect.Value)
+	if ok {
+		value = rv.Interface()
+	}
+
 	switch value := value.(type) {
 	case Value:
 		return value
@@ -656,6 +672,10 @@ func (self *_runtime) toValue(value interface{}) Value {
 	default:
 		{
 			value := reflect.ValueOf(value)
+			if ok && value.Kind() == rv.Kind() {
+				// Use passed in rv which may be writable.
+				value = rv
+			}
 
 			switch value.Kind() {
 			case reflect.Ptr:

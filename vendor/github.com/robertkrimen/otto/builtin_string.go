@@ -5,6 +5,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"unicode/utf16"
 	"unicode/utf8"
 )
 
@@ -72,16 +73,20 @@ func builtinString_concat(call FunctionCall) Value {
 
 func lastIndexRune(s, substr string) int {
 	if i := strings.LastIndex(s, substr); i >= 0 {
-		return utf8.RuneCountInString(s[:i])
+		return utf16Length(s[:i])
 	}
 	return -1
 }
 
 func indexRune(s, substr string) int {
 	if i := strings.Index(s, substr); i >= 0 {
-		return utf8.RuneCountInString(s[:i])
+		return utf16Length(s[:i])
 	}
 	return -1
+}
+
+func utf16Length(s string) int {
+	return len(utf16.Encode([]rune(s)))
 }
 
 func builtinString_indexOf(call FunctionCall) Value {
@@ -257,7 +262,6 @@ func builtinString_replace(call FunctionCall) Value {
 				result = append(result, []byte(replacement)...)
 				lastIndex = match[1]
 			}
-
 		} else {
 			replace := []byte(replaceValue.string())
 			for _, match := range found {
@@ -368,7 +372,6 @@ func builtinString_split(call FunctionCall) Value {
 
 	RETURN:
 		return toValue_object(call.runtime.newArrayOf(valueArray))
-
 	} else {
 		separator := separatorValue.string()
 

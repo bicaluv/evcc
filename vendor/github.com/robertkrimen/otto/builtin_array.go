@@ -389,7 +389,6 @@ func sortCompare(thisObject *_object, index0, index1 uint, compare *_object) int
 }
 
 func arraySortSwap(thisObject *_object, index0, index1 uint) {
-
 	j := struct {
 		name   string
 		exists bool
@@ -642,7 +641,7 @@ func builtinArray_reduce(call FunctionCall) Value {
 			}
 			for ; index < length; index++ {
 				if key := arrayIndexToString(index); thisObject.hasProperty(key) {
-					accumulator = iterator.call(call.runtime, Value{}, accumulator, thisObject.get(key), key, this)
+					accumulator = iterator.call(call.runtime, Value{}, accumulator, thisObject.get(key), index, this)
 				}
 			}
 			return accumulator
