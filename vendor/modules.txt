@@ -25,6 +25,9 @@ github.com/Masterminds/sprig/v3
 # github.com/PuerkitoBio/goquery v1.8.0
 ## explicit; go 1.13
 github.com/PuerkitoBio/goquery
+# github.com/ahmetb/go-linq/v3 v3.2.0
+## explicit; go 1.11
+github.com/ahmetb/go-linq/v3
 # github.com/andig/gosunspec v0.0.0-20211108155140-af2e73b86e71
 ## explicit; go 1.13
 github.com/andig/gosunspec
@@ -277,31 +280,23 @@ github.com/dylanmei/iso8601
 ## explicit; go 1.14
 github.com/eclipse/paho.mqtt.golang
 github.com/eclipse/paho.mqtt.golang/packets
-# github.com/emirpasic/gods v1.18.1
-## explicit; go 1.2
-github.com/emirpasic/gods/containers
-github.com/emirpasic/gods/lists
-github.com/emirpasic/gods/lists/arraylist
-github.com/emirpasic/gods/queues
-github.com/emirpasic/gods/queues/arrayqueue
-github.com/emirpasic/gods/utils
-# github.com/evcc-io/eebus v0.0.0-20221023111026-e3c9e4d1f3c8
+# github.com/enbility/cemd v0.1.5
 ## explicit; go 1.18
-github.com/evcc-io/eebus/app
-github.com/evcc-io/eebus/cert
-github.com/evcc-io/eebus/communication
-github.com/evcc-io/eebus/device
-github.com/evcc-io/eebus/device/entity
-github.com/evcc-io/eebus/device/feature
-github.com/evcc-io/eebus/mdns
-github.com/evcc-io/eebus/server
-github.com/evcc-io/eebus/ship
-github.com/evcc-io/eebus/ship/message
-github.com/evcc-io/eebus/ship/ship
-github.com/evcc-io/eebus/ship/transport
-github.com/evcc-io/eebus/spine
-github.com/evcc-io/eebus/spine/model
-github.com/evcc-io/eebus/util
+github.com/enbility/cemd/cem
+github.com/enbility/cemd/emobility
+github.com/enbility/cemd/scenarios
+github.com/enbility/cemd/util
+# github.com/enbility/eebus-go v0.1.5
+## explicit; go 1.18
+github.com/enbility/eebus-go/features
+github.com/enbility/eebus-go/logging
+github.com/enbility/eebus-go/service
+github.com/enbility/eebus-go/ship
+github.com/enbility/eebus-go/ship/model
+github.com/enbility/eebus-go/ship/util
+github.com/enbility/eebus-go/spine
+github.com/enbility/eebus-go/spine/model
+github.com/enbility/eebus-go/util
 # github.com/fatih/color v1.13.0
 ## explicit; go 1.13
 github.com/fatih/color
@@ -433,6 +428,9 @@ github.com/hashicorp/hcl/json/token
 github.com/hasura/go-graphql-client
 github.com/hasura/go-graphql-client/ident
 github.com/hasura/go-graphql-client/internal/jsonutil
+# github.com/holoplot/go-avahi v1.0.1
+## explicit; go 1.12
+github.com/holoplot/go-avahi
 # github.com/huandu/xstrings v1.4.0
 ## explicit; go 1.12
 github.com/huandu/xstrings
@@ -765,6 +763,9 @@ github.com/writeas/go-strip-markdown
 gitlab.com/bboehmke/sunny
 gitlab.com/bboehmke/sunny/proto
 gitlab.com/bboehmke/sunny/proto/net2
+# gitlab.com/c0b/go-ordered-json v0.0.0-20201030195603-febf46534d5a
+## explicit
+gitlab.com/c0b/go-ordered-json
 # go.opencensus.io v0.24.0
 ## explicit; go 1.13
 go.opencensus.io
@@ -808,7 +809,7 @@ golang.org/x/mod/internal/lazyregexp
 golang.org/x/mod/modfile
 golang.org/x/mod/module
 golang.org/x/mod/semver
-# golang.org/x/net v0.3.0
+# golang.org/x/net v0.4.0
 ## explicit; go 1.17
 golang.org/x/net/bpf
 golang.org/x/net/context
@@ -887,7 +888,7 @@ golang.org/x/text/transform
 golang.org/x/text/unicode/bidi
 golang.org/x/text/unicode/norm
 golang.org/x/text/width
-# golang.org/x/tools v0.3.0
+# golang.org/x/tools v0.4.0
 ## explicit; go 1.18
 golang.org/x/tools/go/ast/astutil
 golang.org/x/tools/go/gcexportdata
@@ -902,7 +903,6 @@ golang.org/x/tools/internal/fastwalk
 golang.org/x/tools/internal/gcimporter
 golang.org/x/tools/internal/gocommand
 golang.org/x/tools/internal/gopathwalk
-golang.org/x/tools/internal/goroot
 golang.org/x/tools/internal/imports
 golang.org/x/tools/internal/packagesinternal
 golang.org/x/tools/internal/pkgbits
