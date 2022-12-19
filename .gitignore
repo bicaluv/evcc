@@ -31,3 +31,4 @@ fly.toml
 vendor/*
 Raspi_backup.iso
 QEMU_EFI.fd
+asset-stats.html
