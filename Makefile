@@ -165,11 +165,11 @@ sync-with-andig-and-deploy:
 	git checkout master
 	# get changes
 	git merge upstream/master --no-edit --no-commit
-	
+
+	go mod vendor
+
 	# build and deploy
 	make raspberrypi
-
-	# go mod vendor
 	
 	# delete dist folder changes
 	git restore dist
