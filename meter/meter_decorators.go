@@ -6,12 +6,12 @@ import (
 	"github.com/evcc-io/evcc/api"
 )
 
-func decorateMeter(base api.Meter, meterEnergy func() (float64, error), meterCurrent func() (float64, float64, float64, error), battery func() (float64, error)) api.Meter {
+func decorateMeter(base api.Meter, meterEnergy func() (float64, error), meterCurrent func() (float64, float64, float64, error), meterVoltage func() (float64, float64, float64, error), meterPower func() (float64, float64, float64, error), battery func() (float64, error), batteryCapacity func() float64) api.Meter {
 	switch {
-	case battery == nil && meterCurrent == nil && meterEnergy == nil:
+	case battery == nil && batteryCapacity == nil && meterCurrent == nil && meterEnergy == nil && meterPower == nil && meterVoltage == nil:
 		return base
 
-	case battery == nil && meterCurrent == nil && meterEnergy != nil:
+	case battery == nil && batteryCapacity == nil && meterCurrent == nil && meterEnergy != nil && meterPower == nil && meterVoltage == nil:
 		return &struct {
 			api.Meter
 			api.MeterEnergy
@@ -22,7 +22,7 @@ func decorateMeter(base api.Meter, meterEnergy func() (float64, error), meterCur
 			},
 		}
 
-	case battery == nil && meterCurrent != nil && meterEnergy == nil:
+	case battery == nil && batteryCapacity == nil && meterCurrent != nil && meterEnergy == nil && meterPower == nil && meterVoltage == nil:
 		return &struct {
 			api.Meter
 			api.MeterCurrent
@@ -33,7 +33,7 @@ func decorateMeter(base api.Meter, meterEnergy func() (float64, error), meterCur
 			},
 		}
 
-	case battery == nil && meterCurrent != nil && meterEnergy != nil:
+	case battery == nil && batteryCapacity == nil && meterCurrent != nil && meterEnergy != nil && meterPower == nil && meterVoltage == nil:
 		return &struct {
 			api.Meter
 			api.MeterCurrent
@@ -48,7 +48,203 @@ func decorateMeter(base api.Meter, meterEnergy func() (float64, error), meterCur
 			},
 		}
 
-	case battery != nil && meterCurrent == nil && meterEnergy == nil:
+	case battery == nil && batteryCapacity == nil && meterCurrent == nil && meterEnergy == nil && meterPower == nil && meterVoltage != nil:
+		return &struct {
+			api.Meter
+			api.MeterVoltage
+		}{
+			Meter: base,
+			MeterVoltage: &decorateMeterMeterVoltageImpl{
+				meterVoltage: meterVoltage,
+			},
+		}
+
+	case battery == nil && batteryCapacity == nil && meterCurrent == nil && meterEnergy != nil && meterPower == nil && meterVoltage != nil:
+		return &struct {
+			api.Meter
+			api.MeterEnergy
+			api.MeterVoltage
+		}{
+			Meter: base,
+			MeterEnergy: &decorateMeterMeterEnergyImpl{
+				meterEnergy: meterEnergy,
+			},
+			MeterVoltage: &decorateMeterMeterVoltageImpl{
+				meterVoltage: meterVoltage,
+			},
+		}
+
+	case battery == nil && batteryCapacity == nil && meterCurrent != nil && meterEnergy == nil && meterPower == nil && meterVoltage != nil:
+		return &struct {
+			api.Meter
+			api.MeterCurrent
+			api.MeterVoltage
+		}{
+			Meter: base,
+			MeterCurrent: &decorateMeterMeterCurrentImpl{
+				meterCurrent: meterCurrent,
+			},
+			MeterVoltage: &decorateMeterMeterVoltageImpl{
+				meterVoltage: meterVoltage,
+			},
+		}
+
+	case battery == nil && batteryCapacity == nil && meterCurrent != nil && meterEnergy != nil && meterPower == nil && meterVoltage != nil:
+		return &struct {
+			api.Meter
+			api.MeterCurrent
+			api.MeterEnergy
+			api.MeterVoltage
+		}{
+			Meter: base,
+			MeterCurrent: &decorateMeterMeterCurrentImpl{
+				meterCurrent: meterCurrent,
+			},
+			MeterEnergy: &decorateMeterMeterEnergyImpl{
+				meterEnergy: meterEnergy,
+			},
+			MeterVoltage: &decorateMeterMeterVoltageImpl{
+				meterVoltage: meterVoltage,
+			},
+		}
+
+	case battery == nil && batteryCapacity == nil && meterCurrent == nil && meterEnergy == nil && meterPower != nil && meterVoltage == nil:
+		return &struct {
+			api.Meter
+			api.MeterPower
+		}{
+			Meter: base,
+			MeterPower: &decorateMeterMeterPowerImpl{
+				meterPower: meterPower,
+			},
+		}
+
+	case battery == nil && batteryCapacity == nil && meterCurrent == nil && meterEnergy != nil && meterPower != nil && meterVoltage == nil:
+		return &struct {
+			api.Meter
+			api.MeterEnergy
+			api.MeterPower
+		}{
+			Meter: base,
+			MeterEnergy: &decorateMeterMeterEnergyImpl{
+				meterEnergy: meterEnergy,
+			},
+			MeterPower: &decorateMeterMeterPowerImpl{
+				meterPower: meterPower,
+			},
+		}
+
+	case battery == nil && batteryCapacity == nil && meterCurrent != nil && meterEnergy == nil && meterPower != nil && meterVoltage == nil:
+		return &struct {
+			api.Meter
+			api.MeterCurrent
+			api.MeterPower
+		}{
+			Meter: base,
+			MeterCurrent: &decorateMeterMeterCurrentImpl{
+				meterCurrent: meterCurrent,
+			},
+			MeterPower: &decorateMeterMeterPowerImpl{
+				meterPower: meterPower,
+			},
+		}
+
+	case battery == nil && batteryCapacity == nil && meterCurrent != nil && meterEnergy != nil && meterPower != nil && meterVoltage == nil:
+		return &struct {
+			api.Meter
+			api.MeterCurrent
+			api.MeterEnergy
+			api.MeterPower
+		}{
+			Meter: base,
+			MeterCurrent: &decorateMeterMeterCurrentImpl{
+				meterCurrent: meterCurrent,
+			},
+			MeterEnergy: &decorateMeterMeterEnergyImpl{
+				meterEnergy: meterEnergy,
+			},
+			MeterPower: &decorateMeterMeterPowerImpl{
+				meterPower: meterPower,
+			},
+		}
+
+	case battery == nil && batteryCapacity == nil && meterCurrent == nil && meterEnergy == nil && meterPower != nil && meterVoltage != nil:
+		return &struct {
+			api.Meter
+			api.MeterPower
+			api.MeterVoltage
+		}{
+			Meter: base,
+			MeterPower: &decorateMeterMeterPowerImpl{
+				meterPower: meterPower,
+			},
+			MeterVoltage: &decorateMeterMeterVoltageImpl{
+				meterVoltage: meterVoltage,
+			},
+		}
+
+	case battery == nil && batteryCapacity == nil && meterCurrent == nil && meterEnergy != nil && meterPower != nil && meterVoltage != nil:
+		return &struct {
+			api.Meter
+			api.MeterEnergy
+			api.MeterPower
+			api.MeterVoltage
+		}{
+			Meter: base,
+			MeterEnergy: &decorateMeterMeterEnergyImpl{
+				meterEnergy: meterEnergy,
+			},
+			MeterPower: &decorateMeterMeterPowerImpl{
+				meterPower: meterPower,
+			},
+			MeterVoltage: &decorateMeterMeterVoltageImpl{
+				meterVoltage: meterVoltage,
+			},
+		}
+
+	case battery == nil && batteryCapacity == nil && meterCurrent != nil && meterEnergy == nil && meterPower != nil && meterVoltage != nil:
+		return &struct {
+			api.Meter
+			api.MeterCurrent
+			api.MeterPower
+			api.MeterVoltage
+		}{
+			Meter: base,
+			MeterCurrent: &decorateMeterMeterCurrentImpl{
+				meterCurrent: meterCurrent,
+			},
+			MeterPower: &decorateMeterMeterPowerImpl{
+				meterPower: meterPower,
+			},
+			MeterVoltage: &decorateMeterMeterVoltageImpl{
+				meterVoltage: meterVoltage,
+			},
+		}
+
+	case battery == nil && batteryCapacity == nil && meterCurrent != nil && meterEnergy != nil && meterPower != nil && meterVoltage != nil:
+		return &struct {
+			api.Meter
+			api.MeterCurrent
+			api.MeterEnergy
+			api.MeterPower
+			api.MeterVoltage
+		}{
+			Meter: base,
+			MeterCurrent: &decorateMeterMeterCurrentImpl{
+				meterCurrent: meterCurrent,
+			},
+			MeterEnergy: &decorateMeterMeterEnergyImpl{
+				meterEnergy: meterEnergy,
+			},
+			MeterPower: &decorateMeterMeterPowerImpl{
+				meterPower: meterPower,
+			},
+			MeterVoltage: &decorateMeterMeterVoltageImpl{
+				meterVoltage: meterVoltage,
+			},
+		}
+
+	case battery != nil && batteryCapacity == nil && meterCurrent == nil && meterEnergy == nil && meterPower == nil && meterVoltage == nil:
 		return &struct {
 			api.Meter
 			api.Battery
@@ -59,7 +255,7 @@ func decorateMeter(base api.Meter, meterEnergy func() (float64, error), meterCur
 			},
 		}
 
-	case battery != nil && meterCurrent == nil && meterEnergy != nil:
+	case battery != nil && batteryCapacity == nil && meterCurrent == nil && meterEnergy != nil && meterPower == nil && meterVoltage == nil:
 		return &struct {
 			api.Meter
 			api.Battery
@@ -74,7 +270,7 @@ func decorateMeter(base api.Meter, meterEnergy func() (float64, error), meterCur
 			},
 		}
 
-	case battery != nil && meterCurrent != nil && meterEnergy == nil:
+	case battery != nil && batteryCapacity == nil && meterCurrent != nil && meterEnergy == nil && meterPower == nil && meterVoltage == nil:
 		return &struct {
 			api.Meter
 			api.Battery
@@ -89,7 +285,7 @@ func decorateMeter(base api.Meter, meterEnergy func() (float64, error), meterCur
 			},
 		}
 
-	case battery != nil && meterCurrent != nil && meterEnergy != nil:
+	case battery != nil && batteryCapacity == nil && meterCurrent != nil && meterEnergy != nil && meterPower == nil && meterVoltage == nil:
 		return &struct {
 			api.Meter
 			api.Battery
@@ -105,6 +301,922 @@ func decorateMeter(base api.Meter, meterEnergy func() (float64, error), meterCur
 			},
 			MeterEnergy: &decorateMeterMeterEnergyImpl{
 				meterEnergy: meterEnergy,
+			},
+		}
+
+	case battery != nil && batteryCapacity == nil && meterCurrent == nil && meterEnergy == nil && meterPower == nil && meterVoltage != nil:
+		return &struct {
+			api.Meter
+			api.Battery
+			api.MeterVoltage
+		}{
+			Meter: base,
+			Battery: &decorateMeterBatteryImpl{
+				battery: battery,
+			},
+			MeterVoltage: &decorateMeterMeterVoltageImpl{
+				meterVoltage: meterVoltage,
+			},
+		}
+
+	case battery != nil && batteryCapacity == nil && meterCurrent == nil && meterEnergy != nil && meterPower == nil && meterVoltage != nil:
+		return &struct {
+			api.Meter
+			api.Battery
+			api.MeterEnergy
+			api.MeterVoltage
+		}{
+			Meter: base,
+			Battery: &decorateMeterBatteryImpl{
+				battery: battery,
+			},
+			MeterEnergy: &decorateMeterMeterEnergyImpl{
+				meterEnergy: meterEnergy,
+			},
+			MeterVoltage: &decorateMeterMeterVoltageImpl{
+				meterVoltage: meterVoltage,
+			},
+		}
+
+	case battery != nil && batteryCapacity == nil && meterCurrent != nil && meterEnergy == nil && meterPower == nil && meterVoltage != nil:
+		return &struct {
+			api.Meter
+			api.Battery
+			api.MeterCurrent
+			api.MeterVoltage
+		}{
+			Meter: base,
+			Battery: &decorateMeterBatteryImpl{
+				battery: battery,
+			},
+			MeterCurrent: &decorateMeterMeterCurrentImpl{
+				meterCurrent: meterCurrent,
+			},
+			MeterVoltage: &decorateMeterMeterVoltageImpl{
+				meterVoltage: meterVoltage,
+			},
+		}
+
+	case battery != nil && batteryCapacity == nil && meterCurrent != nil && meterEnergy != nil && meterPower == nil && meterVoltage != nil:
+		return &struct {
+			api.Meter
+			api.Battery
+			api.MeterCurrent
+			api.MeterEnergy
+			api.MeterVoltage
+		}{
+			Meter: base,
+			Battery: &decorateMeterBatteryImpl{
+				battery: battery,
+			},
+			MeterCurrent: &decorateMeterMeterCurrentImpl{
+				meterCurrent: meterCurrent,
+			},
+			MeterEnergy: &decorateMeterMeterEnergyImpl{
+				meterEnergy: meterEnergy,
+			},
+			MeterVoltage: &decorateMeterMeterVoltageImpl{
+				meterVoltage: meterVoltage,
+			},
+		}
+
+	case battery != nil && batteryCapacity == nil && meterCurrent == nil && meterEnergy == nil && meterPower != nil && meterVoltage == nil:
+		return &struct {
+			api.Meter
+			api.Battery
+			api.MeterPower
+		}{
+			Meter: base,
+			Battery: &decorateMeterBatteryImpl{
+				battery: battery,
+			},
+			MeterPower: &decorateMeterMeterPowerImpl{
+				meterPower: meterPower,
+			},
+		}
+
+	case battery != nil && batteryCapacity == nil && meterCurrent == nil && meterEnergy != nil && meterPower != nil && meterVoltage == nil:
+		return &struct {
+			api.Meter
+			api.Battery
+			api.MeterEnergy
+			api.MeterPower
+		}{
+			Meter: base,
+			Battery: &decorateMeterBatteryImpl{
+				battery: battery,
+			},
+			MeterEnergy: &decorateMeterMeterEnergyImpl{
+				meterEnergy: meterEnergy,
+			},
+			MeterPower: &decorateMeterMeterPowerImpl{
+				meterPower: meterPower,
+			},
+		}
+
+	case battery != nil && batteryCapacity == nil && meterCurrent != nil && meterEnergy == nil && meterPower != nil && meterVoltage == nil:
+		return &struct {
+			api.Meter
+			api.Battery
+			api.MeterCurrent
+			api.MeterPower
+		}{
+			Meter: base,
+			Battery: &decorateMeterBatteryImpl{
+				battery: battery,
+			},
+			MeterCurrent: &decorateMeterMeterCurrentImpl{
+				meterCurrent: meterCurrent,
+			},
+			MeterPower: &decorateMeterMeterPowerImpl{
+				meterPower: meterPower,
+			},
+		}
+
+	case battery != nil && batteryCapacity == nil && meterCurrent != nil && meterEnergy != nil && meterPower != nil && meterVoltage == nil:
+		return &struct {
+			api.Meter
+			api.Battery
+			api.MeterCurrent
+			api.MeterEnergy
+			api.MeterPower
+		}{
+			Meter: base,
+			Battery: &decorateMeterBatteryImpl{
+				battery: battery,
+			},
+			MeterCurrent: &decorateMeterMeterCurrentImpl{
+				meterCurrent: meterCurrent,
+			},
+			MeterEnergy: &decorateMeterMeterEnergyImpl{
+				meterEnergy: meterEnergy,
+			},
+			MeterPower: &decorateMeterMeterPowerImpl{
+				meterPower: meterPower,
+			},
+		}
+
+	case battery != nil && batteryCapacity == nil && meterCurrent == nil && meterEnergy == nil && meterPower != nil && meterVoltage != nil:
+		return &struct {
+			api.Meter
+			api.Battery
+			api.MeterPower
+			api.MeterVoltage
+		}{
+			Meter: base,
+			Battery: &decorateMeterBatteryImpl{
+				battery: battery,
+			},
+			MeterPower: &decorateMeterMeterPowerImpl{
+				meterPower: meterPower,
+			},
+			MeterVoltage: &decorateMeterMeterVoltageImpl{
+				meterVoltage: meterVoltage,
+			},
+		}
+
+	case battery != nil && batteryCapacity == nil && meterCurrent == nil && meterEnergy != nil && meterPower != nil && meterVoltage != nil:
+		return &struct {
+			api.Meter
+			api.Battery
+			api.MeterEnergy
+			api.MeterPower
+			api.MeterVoltage
+		}{
+			Meter: base,
+			Battery: &decorateMeterBatteryImpl{
+				battery: battery,
+			},
+			MeterEnergy: &decorateMeterMeterEnergyImpl{
+				meterEnergy: meterEnergy,
+			},
+			MeterPower: &decorateMeterMeterPowerImpl{
+				meterPower: meterPower,
+			},
+			MeterVoltage: &decorateMeterMeterVoltageImpl{
+				meterVoltage: meterVoltage,
+			},
+		}
+
+	case battery != nil && batteryCapacity == nil && meterCurrent != nil && meterEnergy == nil && meterPower != nil && meterVoltage != nil:
+		return &struct {
+			api.Meter
+			api.Battery
+			api.MeterCurrent
+			api.MeterPower
+			api.MeterVoltage
+		}{
+			Meter: base,
+			Battery: &decorateMeterBatteryImpl{
+				battery: battery,
+			},
+			MeterCurrent: &decorateMeterMeterCurrentImpl{
+				meterCurrent: meterCurrent,
+			},
+			MeterPower: &decorateMeterMeterPowerImpl{
+				meterPower: meterPower,
+			},
+			MeterVoltage: &decorateMeterMeterVoltageImpl{
+				meterVoltage: meterVoltage,
+			},
+		}
+
+	case battery != nil && batteryCapacity == nil && meterCurrent != nil && meterEnergy != nil && meterPower != nil && meterVoltage != nil:
+		return &struct {
+			api.Meter
+			api.Battery
+			api.MeterCurrent
+			api.MeterEnergy
+			api.MeterPower
+			api.MeterVoltage
+		}{
+			Meter: base,
+			Battery: &decorateMeterBatteryImpl{
+				battery: battery,
+			},
+			MeterCurrent: &decorateMeterMeterCurrentImpl{
+				meterCurrent: meterCurrent,
+			},
+			MeterEnergy: &decorateMeterMeterEnergyImpl{
+				meterEnergy: meterEnergy,
+			},
+			MeterPower: &decorateMeterMeterPowerImpl{
+				meterPower: meterPower,
+			},
+			MeterVoltage: &decorateMeterMeterVoltageImpl{
+				meterVoltage: meterVoltage,
+			},
+		}
+
+	case battery == nil && batteryCapacity != nil && meterCurrent == nil && meterEnergy == nil && meterPower == nil && meterVoltage == nil:
+		return &struct {
+			api.Meter
+			api.BatteryCapacity
+		}{
+			Meter: base,
+			BatteryCapacity: &decorateMeterBatteryCapacityImpl{
+				batteryCapacity: batteryCapacity,
+			},
+		}
+
+	case battery == nil && batteryCapacity != nil && meterCurrent == nil && meterEnergy != nil && meterPower == nil && meterVoltage == nil:
+		return &struct {
+			api.Meter
+			api.BatteryCapacity
+			api.MeterEnergy
+		}{
+			Meter: base,
+			BatteryCapacity: &decorateMeterBatteryCapacityImpl{
+				batteryCapacity: batteryCapacity,
+			},
+			MeterEnergy: &decorateMeterMeterEnergyImpl{
+				meterEnergy: meterEnergy,
+			},
+		}
+
+	case battery == nil && batteryCapacity != nil && meterCurrent != nil && meterEnergy == nil && meterPower == nil && meterVoltage == nil:
+		return &struct {
+			api.Meter
+			api.BatteryCapacity
+			api.MeterCurrent
+		}{
+			Meter: base,
+			BatteryCapacity: &decorateMeterBatteryCapacityImpl{
+				batteryCapacity: batteryCapacity,
+			},
+			MeterCurrent: &decorateMeterMeterCurrentImpl{
+				meterCurrent: meterCurrent,
+			},
+		}
+
+	case battery == nil && batteryCapacity != nil && meterCurrent != nil && meterEnergy != nil && meterPower == nil && meterVoltage == nil:
+		return &struct {
+			api.Meter
+			api.BatteryCapacity
+			api.MeterCurrent
+			api.MeterEnergy
+		}{
+			Meter: base,
+			BatteryCapacity: &decorateMeterBatteryCapacityImpl{
+				batteryCapacity: batteryCapacity,
+			},
+			MeterCurrent: &decorateMeterMeterCurrentImpl{
+				meterCurrent: meterCurrent,
+			},
+			MeterEnergy: &decorateMeterMeterEnergyImpl{
+				meterEnergy: meterEnergy,
+			},
+		}
+
+	case battery == nil && batteryCapacity != nil && meterCurrent == nil && meterEnergy == nil && meterPower == nil && meterVoltage != nil:
+		return &struct {
+			api.Meter
+			api.BatteryCapacity
+			api.MeterVoltage
+		}{
+			Meter: base,
+			BatteryCapacity: &decorateMeterBatteryCapacityImpl{
+				batteryCapacity: batteryCapacity,
+			},
+			MeterVoltage: &decorateMeterMeterVoltageImpl{
+				meterVoltage: meterVoltage,
+			},
+		}
+
+	case battery == nil && batteryCapacity != nil && meterCurrent == nil && meterEnergy != nil && meterPower == nil && meterVoltage != nil:
+		return &struct {
+			api.Meter
+			api.BatteryCapacity
+			api.MeterEnergy
+			api.MeterVoltage
+		}{
+			Meter: base,
+			BatteryCapacity: &decorateMeterBatteryCapacityImpl{
+				batteryCapacity: batteryCapacity,
+			},
+			MeterEnergy: &decorateMeterMeterEnergyImpl{
+				meterEnergy: meterEnergy,
+			},
+			MeterVoltage: &decorateMeterMeterVoltageImpl{
+				meterVoltage: meterVoltage,
+			},
+		}
+
+	case battery == nil && batteryCapacity != nil && meterCurrent != nil && meterEnergy == nil && meterPower == nil && meterVoltage != nil:
+		return &struct {
+			api.Meter
+			api.BatteryCapacity
+			api.MeterCurrent
+			api.MeterVoltage
+		}{
+			Meter: base,
+			BatteryCapacity: &decorateMeterBatteryCapacityImpl{
+				batteryCapacity: batteryCapacity,
+			},
+			MeterCurrent: &decorateMeterMeterCurrentImpl{
+				meterCurrent: meterCurrent,
+			},
+			MeterVoltage: &decorateMeterMeterVoltageImpl{
+				meterVoltage: meterVoltage,
+			},
+		}
+
+	case battery == nil && batteryCapacity != nil && meterCurrent != nil && meterEnergy != nil && meterPower == nil && meterVoltage != nil:
+		return &struct {
+			api.Meter
+			api.BatteryCapacity
+			api.MeterCurrent
+			api.MeterEnergy
+			api.MeterVoltage
+		}{
+			Meter: base,
+			BatteryCapacity: &decorateMeterBatteryCapacityImpl{
+				batteryCapacity: batteryCapacity,
+			},
+			MeterCurrent: &decorateMeterMeterCurrentImpl{
+				meterCurrent: meterCurrent,
+			},
+			MeterEnergy: &decorateMeterMeterEnergyImpl{
+				meterEnergy: meterEnergy,
+			},
+			MeterVoltage: &decorateMeterMeterVoltageImpl{
+				meterVoltage: meterVoltage,
+			},
+		}
+
+	case battery == nil && batteryCapacity != nil && meterCurrent == nil && meterEnergy == nil && meterPower != nil && meterVoltage == nil:
+		return &struct {
+			api.Meter
+			api.BatteryCapacity
+			api.MeterPower
+		}{
+			Meter: base,
+			BatteryCapacity: &decorateMeterBatteryCapacityImpl{
+				batteryCapacity: batteryCapacity,
+			},
+			MeterPower: &decorateMeterMeterPowerImpl{
+				meterPower: meterPower,
+			},
+		}
+
+	case battery == nil && batteryCapacity != nil && meterCurrent == nil && meterEnergy != nil && meterPower != nil && meterVoltage == nil:
+		return &struct {
+			api.Meter
+			api.BatteryCapacity
+			api.MeterEnergy
+			api.MeterPower
+		}{
+			Meter: base,
+			BatteryCapacity: &decorateMeterBatteryCapacityImpl{
+				batteryCapacity: batteryCapacity,
+			},
+			MeterEnergy: &decorateMeterMeterEnergyImpl{
+				meterEnergy: meterEnergy,
+			},
+			MeterPower: &decorateMeterMeterPowerImpl{
+				meterPower: meterPower,
+			},
+		}
+
+	case battery == nil && batteryCapacity != nil && meterCurrent != nil && meterEnergy == nil && meterPower != nil && meterVoltage == nil:
+		return &struct {
+			api.Meter
+			api.BatteryCapacity
+			api.MeterCurrent
+			api.MeterPower
+		}{
+			Meter: base,
+			BatteryCapacity: &decorateMeterBatteryCapacityImpl{
+				batteryCapacity: batteryCapacity,
+			},
+			MeterCurrent: &decorateMeterMeterCurrentImpl{
+				meterCurrent: meterCurrent,
+			},
+			MeterPower: &decorateMeterMeterPowerImpl{
+				meterPower: meterPower,
+			},
+		}
+
+	case battery == nil && batteryCapacity != nil && meterCurrent != nil && meterEnergy != nil && meterPower != nil && meterVoltage == nil:
+		return &struct {
+			api.Meter
+			api.BatteryCapacity
+			api.MeterCurrent
+			api.MeterEnergy
+			api.MeterPower
+		}{
+			Meter: base,
+			BatteryCapacity: &decorateMeterBatteryCapacityImpl{
+				batteryCapacity: batteryCapacity,
+			},
+			MeterCurrent: &decorateMeterMeterCurrentImpl{
+				meterCurrent: meterCurrent,
+			},
+			MeterEnergy: &decorateMeterMeterEnergyImpl{
+				meterEnergy: meterEnergy,
+			},
+			MeterPower: &decorateMeterMeterPowerImpl{
+				meterPower: meterPower,
+			},
+		}
+
+	case battery == nil && batteryCapacity != nil && meterCurrent == nil && meterEnergy == nil && meterPower != nil && meterVoltage != nil:
+		return &struct {
+			api.Meter
+			api.BatteryCapacity
+			api.MeterPower
+			api.MeterVoltage
+		}{
+			Meter: base,
+			BatteryCapacity: &decorateMeterBatteryCapacityImpl{
+				batteryCapacity: batteryCapacity,
+			},
+			MeterPower: &decorateMeterMeterPowerImpl{
+				meterPower: meterPower,
+			},
+			MeterVoltage: &decorateMeterMeterVoltageImpl{
+				meterVoltage: meterVoltage,
+			},
+		}
+
+	case battery == nil && batteryCapacity != nil && meterCurrent == nil && meterEnergy != nil && meterPower != nil && meterVoltage != nil:
+		return &struct {
+			api.Meter
+			api.BatteryCapacity
+			api.MeterEnergy
+			api.MeterPower
+			api.MeterVoltage
+		}{
+			Meter: base,
+			BatteryCapacity: &decorateMeterBatteryCapacityImpl{
+				batteryCapacity: batteryCapacity,
+			},
+			MeterEnergy: &decorateMeterMeterEnergyImpl{
+				meterEnergy: meterEnergy,
+			},
+			MeterPower: &decorateMeterMeterPowerImpl{
+				meterPower: meterPower,
+			},
+			MeterVoltage: &decorateMeterMeterVoltageImpl{
+				meterVoltage: meterVoltage,
+			},
+		}
+
+	case battery == nil && batteryCapacity != nil && meterCurrent != nil && meterEnergy == nil && meterPower != nil && meterVoltage != nil:
+		return &struct {
+			api.Meter
+			api.BatteryCapacity
+			api.MeterCurrent
+			api.MeterPower
+			api.MeterVoltage
+		}{
+			Meter: base,
+			BatteryCapacity: &decorateMeterBatteryCapacityImpl{
+				batteryCapacity: batteryCapacity,
+			},
+			MeterCurrent: &decorateMeterMeterCurrentImpl{
+				meterCurrent: meterCurrent,
+			},
+			MeterPower: &decorateMeterMeterPowerImpl{
+				meterPower: meterPower,
+			},
+			MeterVoltage: &decorateMeterMeterVoltageImpl{
+				meterVoltage: meterVoltage,
+			},
+		}
+
+	case battery == nil && batteryCapacity != nil && meterCurrent != nil && meterEnergy != nil && meterPower != nil && meterVoltage != nil:
+		return &struct {
+			api.Meter
+			api.BatteryCapacity
+			api.MeterCurrent
+			api.MeterEnergy
+			api.MeterPower
+			api.MeterVoltage
+		}{
+			Meter: base,
+			BatteryCapacity: &decorateMeterBatteryCapacityImpl{
+				batteryCapacity: batteryCapacity,
+			},
+			MeterCurrent: &decorateMeterMeterCurrentImpl{
+				meterCurrent: meterCurrent,
+			},
+			MeterEnergy: &decorateMeterMeterEnergyImpl{
+				meterEnergy: meterEnergy,
+			},
+			MeterPower: &decorateMeterMeterPowerImpl{
+				meterPower: meterPower,
+			},
+			MeterVoltage: &decorateMeterMeterVoltageImpl{
+				meterVoltage: meterVoltage,
+			},
+		}
+
+	case battery != nil && batteryCapacity != nil && meterCurrent == nil && meterEnergy == nil && meterPower == nil && meterVoltage == nil:
+		return &struct {
+			api.Meter
+			api.Battery
+			api.BatteryCapacity
+		}{
+			Meter: base,
+			Battery: &decorateMeterBatteryImpl{
+				battery: battery,
+			},
+			BatteryCapacity: &decorateMeterBatteryCapacityImpl{
+				batteryCapacity: batteryCapacity,
+			},
+		}
+
+	case battery != nil && batteryCapacity != nil && meterCurrent == nil && meterEnergy != nil && meterPower == nil && meterVoltage == nil:
+		return &struct {
+			api.Meter
+			api.Battery
+			api.BatteryCapacity
+			api.MeterEnergy
+		}{
+			Meter: base,
+			Battery: &decorateMeterBatteryImpl{
+				battery: battery,
+			},
+			BatteryCapacity: &decorateMeterBatteryCapacityImpl{
+				batteryCapacity: batteryCapacity,
+			},
+			MeterEnergy: &decorateMeterMeterEnergyImpl{
+				meterEnergy: meterEnergy,
+			},
+		}
+
+	case battery != nil && batteryCapacity != nil && meterCurrent != nil && meterEnergy == nil && meterPower == nil && meterVoltage == nil:
+		return &struct {
+			api.Meter
+			api.Battery
+			api.BatteryCapacity
+			api.MeterCurrent
+		}{
+			Meter: base,
+			Battery: &decorateMeterBatteryImpl{
+				battery: battery,
+			},
+			BatteryCapacity: &decorateMeterBatteryCapacityImpl{
+				batteryCapacity: batteryCapacity,
+			},
+			MeterCurrent: &decorateMeterMeterCurrentImpl{
+				meterCurrent: meterCurrent,
+			},
+		}
+
+	case battery != nil && batteryCapacity != nil && meterCurrent != nil && meterEnergy != nil && meterPower == nil && meterVoltage == nil:
+		return &struct {
+			api.Meter
+			api.Battery
+			api.BatteryCapacity
+			api.MeterCurrent
+			api.MeterEnergy
+		}{
+			Meter: base,
+			Battery: &decorateMeterBatteryImpl{
+				battery: battery,
+			},
+			BatteryCapacity: &decorateMeterBatteryCapacityImpl{
+				batteryCapacity: batteryCapacity,
+			},
+			MeterCurrent: &decorateMeterMeterCurrentImpl{
+				meterCurrent: meterCurrent,
+			},
+			MeterEnergy: &decorateMeterMeterEnergyImpl{
+				meterEnergy: meterEnergy,
+			},
+		}
+
+	case battery != nil && batteryCapacity != nil && meterCurrent == nil && meterEnergy == nil && meterPower == nil && meterVoltage != nil:
+		return &struct {
+			api.Meter
+			api.Battery
+			api.BatteryCapacity
+			api.MeterVoltage
+		}{
+			Meter: base,
+			Battery: &decorateMeterBatteryImpl{
+				battery: battery,
+			},
+			BatteryCapacity: &decorateMeterBatteryCapacityImpl{
+				batteryCapacity: batteryCapacity,
+			},
+			MeterVoltage: &decorateMeterMeterVoltageImpl{
+				meterVoltage: meterVoltage,
+			},
+		}
+
+	case battery != nil && batteryCapacity != nil && meterCurrent == nil && meterEnergy != nil && meterPower == nil && meterVoltage != nil:
+		return &struct {
+			api.Meter
+			api.Battery
+			api.BatteryCapacity
+			api.MeterEnergy
+			api.MeterVoltage
+		}{
+			Meter: base,
+			Battery: &decorateMeterBatteryImpl{
+				battery: battery,
+			},
+			BatteryCapacity: &decorateMeterBatteryCapacityImpl{
+				batteryCapacity: batteryCapacity,
+			},
+			MeterEnergy: &decorateMeterMeterEnergyImpl{
+				meterEnergy: meterEnergy,
+			},
+			MeterVoltage: &decorateMeterMeterVoltageImpl{
+				meterVoltage: meterVoltage,
+			},
+		}
+
+	case battery != nil && batteryCapacity != nil && meterCurrent != nil && meterEnergy == nil && meterPower == nil && meterVoltage != nil:
+		return &struct {
+			api.Meter
+			api.Battery
+			api.BatteryCapacity
+			api.MeterCurrent
+			api.MeterVoltage
+		}{
+			Meter: base,
+			Battery: &decorateMeterBatteryImpl{
+				battery: battery,
+			},
+			BatteryCapacity: &decorateMeterBatteryCapacityImpl{
+				batteryCapacity: batteryCapacity,
+			},
+			MeterCurrent: &decorateMeterMeterCurrentImpl{
+				meterCurrent: meterCurrent,
+			},
+			MeterVoltage: &decorateMeterMeterVoltageImpl{
+				meterVoltage: meterVoltage,
+			},
+		}
+
+	case battery != nil && batteryCapacity != nil && meterCurrent != nil && meterEnergy != nil && meterPower == nil && meterVoltage != nil:
+		return &struct {
+			api.Meter
+			api.Battery
+			api.BatteryCapacity
+			api.MeterCurrent
+			api.MeterEnergy
+			api.MeterVoltage
+		}{
+			Meter: base,
+			Battery: &decorateMeterBatteryImpl{
+				battery: battery,
+			},
+			BatteryCapacity: &decorateMeterBatteryCapacityImpl{
+				batteryCapacity: batteryCapacity,
+			},
+			MeterCurrent: &decorateMeterMeterCurrentImpl{
+				meterCurrent: meterCurrent,
+			},
+			MeterEnergy: &decorateMeterMeterEnergyImpl{
+				meterEnergy: meterEnergy,
+			},
+			MeterVoltage: &decorateMeterMeterVoltageImpl{
+				meterVoltage: meterVoltage,
+			},
+		}
+
+	case battery != nil && batteryCapacity != nil && meterCurrent == nil && meterEnergy == nil && meterPower != nil && meterVoltage == nil:
+		return &struct {
+			api.Meter
+			api.Battery
+			api.BatteryCapacity
+			api.MeterPower
+		}{
+			Meter: base,
+			Battery: &decorateMeterBatteryImpl{
+				battery: battery,
+			},
+			BatteryCapacity: &decorateMeterBatteryCapacityImpl{
+				batteryCapacity: batteryCapacity,
+			},
+			MeterPower: &decorateMeterMeterPowerImpl{
+				meterPower: meterPower,
+			},
+		}
+
+	case battery != nil && batteryCapacity != nil && meterCurrent == nil && meterEnergy != nil && meterPower != nil && meterVoltage == nil:
+		return &struct {
+			api.Meter
+			api.Battery
+			api.BatteryCapacity
+			api.MeterEnergy
+			api.MeterPower
+		}{
+			Meter: base,
+			Battery: &decorateMeterBatteryImpl{
+				battery: battery,
+			},
+			BatteryCapacity: &decorateMeterBatteryCapacityImpl{
+				batteryCapacity: batteryCapacity,
+			},
+			MeterEnergy: &decorateMeterMeterEnergyImpl{
+				meterEnergy: meterEnergy,
+			},
+			MeterPower: &decorateMeterMeterPowerImpl{
+				meterPower: meterPower,
+			},
+		}
+
+	case battery != nil && batteryCapacity != nil && meterCurrent != nil && meterEnergy == nil && meterPower != nil && meterVoltage == nil:
+		return &struct {
+			api.Meter
+			api.Battery
+			api.BatteryCapacity
+			api.MeterCurrent
+			api.MeterPower
+		}{
+			Meter: base,
+			Battery: &decorateMeterBatteryImpl{
+				battery: battery,
+			},
+			BatteryCapacity: &decorateMeterBatteryCapacityImpl{
+				batteryCapacity: batteryCapacity,
+			},
+			MeterCurrent: &decorateMeterMeterCurrentImpl{
+				meterCurrent: meterCurrent,
+			},
+			MeterPower: &decorateMeterMeterPowerImpl{
+				meterPower: meterPower,
+			},
+		}
+
+	case battery != nil && batteryCapacity != nil && meterCurrent != nil && meterEnergy != nil && meterPower != nil && meterVoltage == nil:
+		return &struct {
+			api.Meter
+			api.Battery
+			api.BatteryCapacity
+			api.MeterCurrent
+			api.MeterEnergy
+			api.MeterPower
+		}{
+			Meter: base,
+			Battery: &decorateMeterBatteryImpl{
+				battery: battery,
+			},
+			BatteryCapacity: &decorateMeterBatteryCapacityImpl{
+				batteryCapacity: batteryCapacity,
+			},
+			MeterCurrent: &decorateMeterMeterCurrentImpl{
+				meterCurrent: meterCurrent,
+			},
+			MeterEnergy: &decorateMeterMeterEnergyImpl{
+				meterEnergy: meterEnergy,
+			},
+			MeterPower: &decorateMeterMeterPowerImpl{
+				meterPower: meterPower,
+			},
+		}
+
+	case battery != nil && batteryCapacity != nil && meterCurrent == nil && meterEnergy == nil && meterPower != nil && meterVoltage != nil:
+		return &struct {
+			api.Meter
+			api.Battery
+			api.BatteryCapacity
+			api.MeterPower
+			api.MeterVoltage
+		}{
+			Meter: base,
+			Battery: &decorateMeterBatteryImpl{
+				battery: battery,
+			},
+			BatteryCapacity: &decorateMeterBatteryCapacityImpl{
+				batteryCapacity: batteryCapacity,
+			},
+			MeterPower: &decorateMeterMeterPowerImpl{
+				meterPower: meterPower,
+			},
+			MeterVoltage: &decorateMeterMeterVoltageImpl{
+				meterVoltage: meterVoltage,
+			},
+		}
+
+	case battery != nil && batteryCapacity != nil && meterCurrent == nil && meterEnergy != nil && meterPower != nil && meterVoltage != nil:
+		return &struct {
+			api.Meter
+			api.Battery
+			api.BatteryCapacity
+			api.MeterEnergy
+			api.MeterPower
+			api.MeterVoltage
+		}{
+			Meter: base,
+			Battery: &decorateMeterBatteryImpl{
+				battery: battery,
+			},
+			BatteryCapacity: &decorateMeterBatteryCapacityImpl{
+				batteryCapacity: batteryCapacity,
+			},
+			MeterEnergy: &decorateMeterMeterEnergyImpl{
+				meterEnergy: meterEnergy,
+			},
+			MeterPower: &decorateMeterMeterPowerImpl{
+				meterPower: meterPower,
+			},
+			MeterVoltage: &decorateMeterMeterVoltageImpl{
+				meterVoltage: meterVoltage,
+			},
+		}
+
+	case battery != nil && batteryCapacity != nil && meterCurrent != nil && meterEnergy == nil && meterPower != nil && meterVoltage != nil:
+		return &struct {
+			api.Meter
+			api.Battery
+			api.BatteryCapacity
+			api.MeterCurrent
+			api.MeterPower
+			api.MeterVoltage
+		}{
+			Meter: base,
+			Battery: &decorateMeterBatteryImpl{
+				battery: battery,
+			},
+			BatteryCapacity: &decorateMeterBatteryCapacityImpl{
+				batteryCapacity: batteryCapacity,
+			},
+			MeterCurrent: &decorateMeterMeterCurrentImpl{
+				meterCurrent: meterCurrent,
+			},
+			MeterPower: &decorateMeterMeterPowerImpl{
+				meterPower: meterPower,
+			},
+			MeterVoltage: &decorateMeterMeterVoltageImpl{
+				meterVoltage: meterVoltage,
+			},
+		}
+
+	case battery != nil && batteryCapacity != nil && meterCurrent != nil && meterEnergy != nil && meterPower != nil && meterVoltage != nil:
+		return &struct {
+			api.Meter
+			api.Battery
+			api.BatteryCapacity
+			api.MeterCurrent
+			api.MeterEnergy
+			api.MeterPower
+			api.MeterVoltage
+		}{
+			Meter: base,
+			Battery: &decorateMeterBatteryImpl{
+				battery: battery,
+			},
+			BatteryCapacity: &decorateMeterBatteryCapacityImpl{
+				batteryCapacity: batteryCapacity,
+			},
+			MeterCurrent: &decorateMeterMeterCurrentImpl{
+				meterCurrent: meterCurrent,
+			},
+			MeterEnergy: &decorateMeterMeterEnergyImpl{
+				meterEnergy: meterEnergy,
+			},
+			MeterPower: &decorateMeterMeterPowerImpl{
+				meterPower: meterPower,
+			},
+			MeterVoltage: &decorateMeterMeterVoltageImpl{
+				meterVoltage: meterVoltage,
 			},
 		}
 	}
@@ -118,6 +1230,14 @@ type decorateMeterBatteryImpl struct {
 
 func (impl *decorateMeterBatteryImpl) Soc() (float64, error) {
 	return impl.battery()
+}
+
+type decorateMeterBatteryCapacityImpl struct {
+	batteryCapacity func() float64
+}
+
+func (impl *decorateMeterBatteryCapacityImpl) Capacity() float64 {
+	return impl.batteryCapacity()
 }
 
 type decorateMeterMeterCurrentImpl struct {
@@ -134,4 +1254,20 @@ type decorateMeterMeterEnergyImpl struct {
 
 func (impl *decorateMeterMeterEnergyImpl) TotalEnergy() (float64, error) {
 	return impl.meterEnergy()
+}
+
+type decorateMeterMeterPowerImpl struct {
+	meterPower func() (float64, float64, float64, error)
+}
+
+func (impl *decorateMeterMeterPowerImpl) Powers() (float64, float64, float64, error) {
+	return impl.meterPower()
+}
+
+type decorateMeterMeterVoltageImpl struct {
+	meterVoltage func() (float64, float64, float64, error)
+}
+
+func (impl *decorateMeterMeterVoltageImpl) Voltages() (float64, float64, float64, error) {
+	return impl.meterVoltage()
 }
