@@ -1,8 +1,7 @@
 // Functions for configuring the client object:
 //
-//   (*Client) FetchTLSCert()
-//   (*Client) SetTLSCert(cert)
-//
+//	(*Client) FetchTLSCert()
+//	(*Client) SetTLSCert(cert)
 package powerwall
 
 import (
@@ -11,7 +10,7 @@ import (
 	"crypto/x509"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net"
 	"net/http"
 	"net/url"
@@ -176,7 +175,7 @@ func (c *Client) httpDo(req *http.Request) (*http.Response, error) {
 			// We only retry on net.Error
 			break
 		}
-		if time.Now().Sub(start_time) >= c.retryTimeout {
+		if time.Since(start_time) >= c.retryTimeout {
 			// We've retried as long as we can.  Give up.
 			break
 		}
@@ -185,7 +184,7 @@ func (c *Client) httpDo(req *http.Request) (*http.Response, error) {
 		// have already used some or all of the time of the retry
 		// interval, so figure out how much (if any) is remaining to
 		// wait.
-		time.Sleep(c.retryInterval - (time.Now().Sub(attempt_time)))
+		time.Sleep(c.retryInterval - time.Since(attempt_time))
 	}
 	return resp, err
 }
@@ -268,7 +267,7 @@ func (c *Client) doHttpRequest(api string, method string, payload []byte, conten
 	}
 	defer resp.Body.Close()
 
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
 	}

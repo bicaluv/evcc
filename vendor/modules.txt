@@ -309,8 +309,8 @@ github.com/fatih/structs
 # github.com/felixge/httpsnoop v1.0.3
 ## explicit; go 1.13
 github.com/felixge/httpsnoop
-# github.com/foogod/go-powerwall v0.2.0 => github.com/andig/go-powerwall v0.2.1-0.20220205120646-e5220ad9a9a0
-## explicit; go 1.17
+# github.com/foogod/go-powerwall v0.2.0 => github.com/andig/go-powerwall v0.2.1-0.20230102102528-4d59ac6910c6
+## explicit; go 1.18
 github.com/foogod/go-powerwall
 # github.com/fsnotify/fsnotify v1.6.0
 ## explicit; go 1.16
@@ -1118,5 +1118,5 @@ nhooyr.io/websocket/internal/errd
 nhooyr.io/websocket/internal/wsjs
 nhooyr.io/websocket/internal/xsync
 nhooyr.io/websocket/wsjson
-# github.com/foogod/go-powerwall => github.com/andig/go-powerwall v0.2.1-0.20220205120646-e5220ad9a9a0
+# github.com/foogod/go-powerwall => github.com/andig/go-powerwall v0.2.1-0.20230102102528-4d59ac6910c6
 # github.com/mlnoga/rct => github.com/andig/rct v0.0.0-20221101081802-96d01efdc68c

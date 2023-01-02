@@ -56,15 +56,15 @@ func (v *Duration) MarshalJSON() ([]byte, error) {
 // Needless to say, this encoding is rather cumbersome and redundant, so we
 // instead provide a custom JSON decoder to decode these into a string/string
 // map in the form 'name: value'.
-type DecodedAlert map[string]string
+type DecodedAlert map[string]interface{}
 
 func (v *DecodedAlert) UnmarshalJSON(data []byte) error {
 	type entry struct {
-		Name  string `json:"name"`
-		Value string `json:"value"`
+		Name  string      `json:"name"`
+		Value interface{} `json:"value"`
 	}
 
-	strvalue := ""
+	var strvalue string
 	err := json.Unmarshal(data, &strvalue)
 	if err != nil {
 		return err
@@ -73,12 +73,14 @@ func (v *DecodedAlert) UnmarshalJSON(data []byte) error {
 		// For an empty string, just return a nil map
 		return nil
 	}
+
 	entries := []entry{}
 	err = json.Unmarshal([]byte(strvalue), &entries)
 	if err != nil {
 		return err
 	}
-	*v = make(map[string]string, len(entries))
+
+	*v = make(map[string]interface{}, len(entries))
 	for _, e := range entries {
 		(*v)[e.Name] = e.Value
 	}

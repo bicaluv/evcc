@@ -2,10 +2,9 @@
 //
 // (Note: DoLogin generally does not need to be called explicitly)
 //
-//   (*Client) DoLogin()
-//   (*Client) GetAuthToken()
-//   (*Client) SetAuthToken(token string)
-//
+//	(*Client) DoLogin()
+//	(*Client) GetAuthToken()
+//	(*Client) SetAuthToken(token string)
 package powerwall
 
 import (
@@ -131,7 +130,7 @@ type loginResponse struct {
 	Roles     []string `json:"roles"`
 	Token     string   `json:"token"`
 	Provider  string   `json:"provider"`
-	loginTime string   `json:"loginTime"`
+	LoginTime string   `json:"loginTime"`
 }
 
 func (c *Client) performLogin(email, password string) (string, error) {
@@ -159,6 +158,6 @@ func (c *Client) performLogin(email, password string) (string, error) {
 	} else {
 		// No error, but also no token?
 		c.logf("Login successful but no token returned?")
-		return "", errors.New("No auth token returned from login API call")
+		return "", errors.New("no auth token returned from login API call")
 	}
 }
