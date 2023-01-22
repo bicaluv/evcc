@@ -342,9 +342,6 @@ github.com/go-kit/log/level
 # github.com/go-logfmt/logfmt v0.5.1
 ## explicit; go 1.17
 github.com/go-logfmt/logfmt
-# github.com/go-ping/ping v1.1.0
-## explicit; go 1.14
-github.com/go-ping/ping
 # github.com/go-playground/locales v0.14.1
 ## explicit; go 1.17
 github.com/go-playground/locales
@@ -652,6 +649,9 @@ github.com/pkg/errors
 # github.com/pmezard/go-difflib v1.0.0
 ## explicit
 github.com/pmezard/go-difflib/difflib
+# github.com/prometheus-community/pro-bing v0.1.0
+## explicit; go 1.17
+github.com/prometheus-community/pro-bing
 # github.com/prometheus/client_golang v1.14.0
 ## explicit; go 1.17
 github.com/prometheus/client_golang/api
