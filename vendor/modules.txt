@@ -283,13 +283,13 @@ github.com/dylanmei/iso8601
 ## explicit; go 1.14
 github.com/eclipse/paho.mqtt.golang
 github.com/eclipse/paho.mqtt.golang/packets
-# github.com/enbility/cemd v0.1.5
+# github.com/enbility/cemd v0.1.6
 ## explicit; go 1.18
 github.com/enbility/cemd/cem
 github.com/enbility/cemd/emobility
 github.com/enbility/cemd/scenarios
 github.com/enbility/cemd/util
-# github.com/enbility/eebus-go v0.1.5
+# github.com/enbility/eebus-go v0.1.6
 ## explicit; go 1.18
 github.com/enbility/eebus-go/features
 github.com/enbility/eebus-go/logging
