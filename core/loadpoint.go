@@ -739,12 +739,18 @@ func (lp *Loadpoint) targetSocReached() bool {
 }
 
 // minSocNotReached checks if minimum is configured and not reached.
-// If vehicle is not configured this will always return true
+// If vehicle is not configured this will always return false
 func (lp *Loadpoint) minSocNotReached() bool {
-	return lp.vehicle != nil &&
-		lp.Soc.min > 0 &&
-		lp.vehicleSoc < float64(lp.Soc.min) &&
-		lp.isNighttime()
+	if lp.vehicle == nil || lp.Soc.min == 0 {
+		return false
+	}
+
+	if lp.vehicleSoc != 0 {
+		return lp.vehicleSoc < float64(lp.Soc.min) && lp.isNighttime()
+	}
+
+	minEnergy := lp.vehicle.Capacity() * float64(lp.Soc.min) / 100 / soc.ChargeEfficiency
+	return minEnergy > 0 && lp.getChargedEnergy() < minEnergy && lp.isNighttime()
 }
 
 // isNighttime checks at the given geo position if it is currently night or day.
