@@ -760,7 +760,7 @@ github.com/vmihailenco/msgpack/v5/msgpcode
 github.com/vmihailenco/tagparser/v2
 github.com/vmihailenco/tagparser/v2/internal
 github.com/vmihailenco/tagparser/v2/internal/parser
-# github.com/volkszaehler/mbmd v0.0.0-20230122165729-773311cba1f9
+# github.com/volkszaehler/mbmd v0.0.0-20230202102845-c58e07a6f048
 ## explicit; go 1.18
 github.com/volkszaehler/mbmd/encoding
 github.com/volkszaehler/mbmd/meters
