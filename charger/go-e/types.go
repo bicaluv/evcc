@@ -65,7 +65,9 @@ func (g *StatusResponse) Currents() (float64, float64, float64) {
 
 func (g *StatusResponse) Voltages() (float64, float64, float64) {
 	if len(g.Nrg) == 16 {
-		return g.Nrg[0], g.Nrg[1], g.Nrg[2]
+		// mm: fix voltages of my go-e charger because of poor meter implementation
+		offset := 12.0
+		return g.Nrg[0] + offset, g.Nrg[1] + offset, g.Nrg[2] + offset
 	}
 	return 0, 0, 0
 }
