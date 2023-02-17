@@ -146,7 +146,7 @@ github.com/asaskevich/EventBus
 # github.com/avast/retry-go/v3 v3.1.1
 ## explicit; go 1.13
 github.com/avast/retry-go/v3
-# github.com/aws/aws-sdk-go v1.44.198
+# github.com/aws/aws-sdk-go v1.44.203
 ## explicit; go 1.11
 github.com/aws/aws-sdk-go/aws
 github.com/aws/aws-sdk-go/aws/awserr
@@ -319,8 +319,8 @@ github.com/fsnotify/fsnotify
 # github.com/glebarez/go-sqlite v1.20.3
 ## explicit; go 1.17
 github.com/glebarez/go-sqlite
-# github.com/glebarez/sqlite v1.6.0
-## explicit; go 1.16
+# github.com/glebarez/sqlite v1.7.0
+## explicit; go 1.18
 github.com/glebarez/sqlite
 # github.com/go-http-utils/etag v0.0.0-20161124023236-513ea8f21eb1
 ## explicit
@@ -358,7 +358,7 @@ github.com/go-telegram-bot-api/telegram-bot-api/v5
 github.com/godbus/dbus/v5
 github.com/godbus/dbus/v5/introspect
 github.com/godbus/dbus/v5/prop
-# github.com/gokrazy/updater v0.0.0-20230206220435-64f39da38fa6
+# github.com/gokrazy/updater v0.0.0-20230215172637-813ccc7f21e2
 ## explicit; go 1.15
 github.com/gokrazy/updater
 # github.com/golang-module/carbon/v2 v2.2.3
@@ -389,7 +389,7 @@ github.com/google/go-querystring/query
 # github.com/google/uuid v1.3.0
 ## explicit
 github.com/google/uuid
-# github.com/googleapis/enterprise-certificate-proxy v0.2.2
+# github.com/googleapis/enterprise-certificate-proxy v0.2.3
 ## explicit; go 1.19
 github.com/googleapis/enterprise-certificate-proxy/client
 github.com/googleapis/enterprise-certificate-proxy/client/util
@@ -432,7 +432,7 @@ github.com/hashicorp/hcl/hcl/token
 github.com/hashicorp/hcl/json/parser
 github.com/hashicorp/hcl/json/scanner
 github.com/hashicorp/hcl/json/token
-# github.com/hasura/go-graphql-client v0.8.2-0.20230118111322-12655772463c
+# github.com/hasura/go-graphql-client v0.9.0
 ## explicit; go 1.16
 github.com/hasura/go-graphql-client
 github.com/hasura/go-graphql-client/ident
@@ -809,7 +809,7 @@ golang.org/x/crypto/openpgp/packet
 golang.org/x/crypto/openpgp/s2k
 golang.org/x/crypto/pbkdf2
 golang.org/x/crypto/scrypt
-# golang.org/x/exp v0.0.0-20230206171751-46f607a40771
+# golang.org/x/exp v0.0.0-20230213192124-5e25df0256eb
 ## explicit; go 1.18
 golang.org/x/exp/constraints
 golang.org/x/exp/maps
@@ -820,7 +820,7 @@ golang.org/x/mod/internal/lazyregexp
 golang.org/x/mod/modfile
 golang.org/x/mod/module
 golang.org/x/mod/semver
-# golang.org/x/net v0.6.0
+# golang.org/x/net v0.7.0
 ## explicit; go 1.17
 golang.org/x/net/bpf
 golang.org/x/net/context
@@ -920,7 +920,7 @@ golang.org/x/tools/internal/pkgbits
 golang.org/x/tools/internal/tokeninternal
 golang.org/x/tools/internal/typeparams
 golang.org/x/tools/internal/typesinternal
-# google.golang.org/api v0.109.0
+# google.golang.org/api v0.110.0
 ## explicit; go 1.19
 google.golang.org/api/googleapi
 google.golang.org/api/googleapi/transport
@@ -947,7 +947,7 @@ google.golang.org/appengine/internal/modules
 google.golang.org/appengine/internal/remote_api
 google.golang.org/appengine/internal/urlfetch
 google.golang.org/appengine/urlfetch
-# google.golang.org/genproto v0.0.0-20230209215440-0dfe4f8abfcc
+# google.golang.org/genproto v0.0.0-20230216225411-c8e22ba71e44
 ## explicit; go 1.19
 google.golang.org/genproto/googleapis/rpc/code
 google.golang.org/genproto/googleapis/rpc/errdetails
