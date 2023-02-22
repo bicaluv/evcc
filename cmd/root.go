@@ -37,7 +37,8 @@ var (
 	log     = util.NewLogger("main")
 	cfgFile string
 
-	ignoreMqtt = []string{"auth", "releaseNotes"} // excessive size may crash certain brokers
+	ignoreErrors = []string{"warn", "error"}        // don't add to cache
+	ignoreMqtt   = []string{"auth", "releaseNotes"} // excessive size may crash certain brokers
 )
 
 // rootCmd represents the base command when called without any subcommands
@@ -134,7 +135,7 @@ func runRoot(cmd *cobra.Command, args []string) {
 
 	// value cache
 	cache := util.NewCache()
-	go cache.Run(tee.Attach())
+	go cache.Run(pipe.NewDropper(ignoreErrors...).Pipe(tee.Attach()))
 
 	// create web server
 	socketHub := server.NewSocketHub()
@@ -154,20 +155,11 @@ func runRoot(cmd *cobra.Command, args []string) {
 	go socketHub.Run(tee.Attach(), cache)
 
 	// setup values channel
-	valueChan := make(chan util.Param, 1)
+	valueChan := make(chan util.Param)
 	go tee.Run(valueChan)
-
-	// setup events channel
-	eventChan := make(chan push.Event, 1)
-	go pushErrorEvents(eventChan, tee.Attach())
 
 	// capture log messages for UI
 	util.CaptureLogs(valueChan)
-
-	// setup messaging
-	if err == nil {
-		err = configureMessengers(conf.Messaging, eventChan, valueChan, cache)
-	}
 
 	// setup environment
 	if err == nil {
@@ -219,6 +211,12 @@ func runRoot(cmd *cobra.Command, args []string) {
 		err = configureHEMS(conf.HEMS, site, httpd)
 	}
 
+	// setup messaging
+	var pushChan chan push.Event
+	if err == nil {
+		pushChan, err = configureMessengers(conf.Messaging, valueChan, cache)
+	}
+
 	// run shutdown functions on stop
 	var once sync.Once
 	stopC := make(chan struct{})
@@ -254,7 +252,7 @@ func runRoot(cmd *cobra.Command, args []string) {
 
 		// set channels
 		site.DumpConfig()
-		site.Prepare(valueChan, eventChan)
+		site.Prepare(valueChan, pushChan)
 
 		// show and check version
 		valueChan <- util.Param{Key: "version", Val: server.FormattedVersion()}
@@ -263,6 +261,9 @@ func runRoot(cmd *cobra.Command, args []string) {
 		// expose sponsor to UI
 		if sponsor.Subject != "" {
 			valueChan <- util.Param{Key: "sponsor", Val: sponsor.Subject}
+			if validDuration := time.Until(sponsor.ExpiresAt); validDuration < 30*24*time.Hour {
+				valueChan <- util.Param{Key: "sponsorValid", Val: validDuration}
+			}
 		}
 
 		// allow web access for vehicles
