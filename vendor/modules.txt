@@ -131,7 +131,7 @@ github.com/andig/gosunspec/smdx
 github.com/andig/gosunspec/spi
 github.com/andig/gosunspec/typelabel
 github.com/andig/gosunspec/typelen
-# github.com/andig/mbserver v0.0.0-20221101171752-364e71b0089c
+# github.com/andig/mbserver v0.0.0-20230310211055-1d29cbb5820e
 ## explicit; go 1.18
 github.com/andig/mbserver
 # github.com/andybalholm/cascadia v1.3.1
@@ -770,7 +770,7 @@ github.com/vmihailenco/msgpack/v5/msgpcode
 github.com/vmihailenco/tagparser/v2
 github.com/vmihailenco/tagparser/v2/internal
 github.com/vmihailenco/tagparser/v2/internal/parser
-# github.com/volkszaehler/mbmd v0.0.0-20230218103719-dd45a8a8dfe9
+# github.com/volkszaehler/mbmd v0.0.0-20230310195335-01cfa4683e53
 ## explicit; go 1.18
 github.com/volkszaehler/mbmd/encoding
 github.com/volkszaehler/mbmd/meters
