@@ -284,13 +284,16 @@ github.com/dylanmei/iso8601
 ## explicit; go 1.14
 github.com/eclipse/paho.mqtt.golang
 github.com/eclipse/paho.mqtt.golang/packets
-# github.com/enbility/cemd v0.1.7
+# github.com/enbility/cemd v0.2.0
 ## explicit; go 1.18
 github.com/enbility/cemd/cem
 github.com/enbility/cemd/emobility
+github.com/enbility/cemd/grid
+github.com/enbility/cemd/inverterbatteryvis
+github.com/enbility/cemd/inverterpvvis
 github.com/enbility/cemd/scenarios
 github.com/enbility/cemd/util
-# github.com/enbility/eebus-go v0.1.7
+# github.com/enbility/eebus-go v0.2.0
 ## explicit; go 1.18
 github.com/enbility/eebus-go/features
 github.com/enbility/eebus-go/logging
@@ -759,6 +762,11 @@ github.com/subosito/gotenv
 # github.com/teivah/onecontext v1.3.0
 ## explicit; go 1.12
 github.com/teivah/onecontext
+# github.com/traefik/yaegi v0.14.3
+## explicit; go 1.18
+github.com/traefik/yaegi/internal/unsafe2
+github.com/traefik/yaegi/interp
+github.com/traefik/yaegi/stdlib
 # github.com/tv42/httpunix v0.0.0-20191220191345-2ba4b9c3382c
 ## explicit; go 1.13
 github.com/tv42/httpunix

@@ -27,8 +27,8 @@ require (
 	github.com/dustin/go-humanize v1.0.1
 	github.com/dylanmei/iso8601 v0.1.0
 	github.com/eclipse/paho.mqtt.golang v1.4.2
-	github.com/enbility/cemd v0.1.7
-	github.com/enbility/eebus-go v0.1.7
+	github.com/enbility/cemd v0.2.0
+	github.com/enbility/eebus-go v0.2.0
 	github.com/fatih/structs v1.1.0
 	github.com/foogod/go-powerwall v0.2.0
 	github.com/glebarez/sqlite v1.7.0
@@ -87,6 +87,7 @@ require (
 	github.com/spf13/pflag v1.0.5
 	github.com/spf13/viper v1.15.0
 	github.com/stretchr/testify v1.8.2
+	github.com/traefik/yaegi v0.14.3
 	github.com/tv42/httpunix v0.0.0-20191220191345-2ba4b9c3382c
 	github.com/volkszaehler/mbmd v0.0.0-20230312113724-f6764040a78e
 	github.com/writeas/go-strip-markdown v2.0.1+incompatible
