@@ -119,6 +119,7 @@ func NewClient(ctx context.Context, options ...func(Party) error) (Client, error
 		format:           "json",
 		partyBase:        newPartyBase(ctx, info, dbg),
 		lastID:           -1,
+		backoffFactory:   func() backoff.BackOff { return backoff.NewExponentialBackOff() },
 	}
 	for _, option := range options {
 		if option != nil {
@@ -151,11 +152,12 @@ type client struct {
 	loop              *loop
 	receiver          interface{}
 	lastID            int64
+	backoffFactory    func() backoff.BackOff
 }
 
 func (c *client) Start() {
 	c.setState(ClientConnecting)
-	boff := backoff.NewExponentialBackOff()
+	boff := c.backoffFactory()
 	go func() {
 		for {
 			c.setErr(nil)
@@ -265,6 +267,10 @@ func (c *client) setupConnectionAndProtocol() (hubProtocol, error) {
 			if err != nil {
 				return nil, err
 			}
+		}
+		// Pass maximum receive message size to a potential websocket connection
+		if wsConn, ok := c.conn.(*webSocketConnection); ok {
+			wsConn.conn.SetReadLimit(int64(c.maximumReceiveMessageSize()))
 		}
 		protocol, err := c.processHandshake()
 		if err != nil {

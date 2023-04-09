@@ -54,7 +54,7 @@ func NewHTTPConnection(ctx context.Context, address string, options ...func(*htt
 	}
 
 	if httpConn.client == nil {
-		httpConn.client = &http.Client{}
+		httpConn.client = http.DefaultClient
 	}
 
 	reqURL, err := url.Parse(address)
@@ -77,7 +77,7 @@ func NewHTTPConnection(ctx context.Context, address string, options ...func(*htt
 	if err != nil {
 		return nil, err
 	}
-	defer func() { _ = resp.Body.Close() }()
+	defer func() { closeResponseBody(resp.Body) }()
 
 	if resp.StatusCode != 200 {
 		return nil, fmt.Errorf("%v %v -> %v", req.Method, req.URL.String(), resp.Status)
@@ -117,6 +117,12 @@ func NewHTTPConnection(ctx context.Context, address string, options ...func(*htt
 
 		if httpConn.headers != nil {
 			opts.HTTPHeader = httpConn.headers()
+		} else {
+			opts.HTTPHeader = http.Header{}
+		}
+
+		for _, cookie := range resp.Cookies() {
+			opts.HTTPHeader.Add("Cookie", cookie.String())
 		}
 
 		ws, _, err := websocket.Dial(ctx, wsURL.String(), opts)
@@ -124,6 +130,7 @@ func NewHTTPConnection(ctx context.Context, address string, options ...func(*htt
 			return nil, err
 		}
 
+		// TODO think about if the API should give the possibility to cancel this connection
 		conn = newWebSocketConnection(context.Background(), nr.ConnectionID, ws)
 
 	case nr.getTransferFormats("ServerSentEvents") != nil:
@@ -149,4 +156,12 @@ func NewHTTPConnection(ctx context.Context, address string, options ...func(*htt
 	}
 
 	return conn, nil
+}
+
+// closeResponseBody reads a http response body to the end and closes it
+// See https://blog.cubieserver.de/2022/http-connection-reuse-in-go-clients/
+// The body needs to be fully read and closed, otherwise the connection will not be reused
+func closeResponseBody(body io.ReadCloser) {
+	_, _ = io.Copy(io.Discard, body)
+	_ = body.Close()
 }
