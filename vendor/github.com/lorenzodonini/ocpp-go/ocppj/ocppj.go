@@ -157,7 +157,7 @@ type CallError struct {
 	MessageTypeId    MessageType    `json:"messageTypeId" validate:"required,eq=4"`
 	UniqueId         string         `json:"uniqueId" validate:"required,max=36"`
 	ErrorCode        ocpp.ErrorCode `json:"errorCode" validate:"errorCode"`
-	ErrorDescription string         `json:"errorDescription" validate:"required"`
+	ErrorDescription string         `json:"errorDescription" validate:"omitempty"`
 	ErrorDetails     interface{}    `json:"errorDetails" validate:"omitempty"`
 }
 
@@ -175,7 +175,11 @@ func (callError *CallError) MarshalJSON() ([]byte, error) {
 	fields[1] = callError.UniqueId
 	fields[2] = callError.ErrorCode
 	fields[3] = callError.ErrorDescription
-	fields[4] = callError.ErrorDetails
+	if callError.ErrorDetails == nil {
+		fields[4] = struct{}{}
+	} else {
+		fields[4] = callError.ErrorDetails
+	}
 	return ocppMessageToJson(fields)
 }
 
@@ -496,7 +500,7 @@ func (endpoint *Endpoint) CreateCallResult(confirmation ocpp.Response, uniqueId 
 	action := confirmation.GetFeatureName()
 	profile, _ := endpoint.GetProfileForFeature(action)
 	if profile == nil {
-		return nil, fmt.Errorf("Couldn't create Call Result for unsupported action %v", action)
+		return nil, ocpp.NewError(NotSupported, fmt.Sprintf("couldn't create Call Result for unsupported action %v", action), uniqueId)
 	}
 	callResult := CallResult{
 		MessageTypeId: CALL_RESULT,

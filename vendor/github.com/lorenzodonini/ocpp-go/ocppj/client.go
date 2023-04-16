@@ -3,6 +3,8 @@ package ocppj
 import (
 	"fmt"
 
+	"gopkg.in/go-playground/validator.v9"
+
 	"github.com/lorenzodonini/ocpp-go/ocpp"
 	"github.com/lorenzodonini/ocpp-go/ws"
 )
@@ -170,13 +172,13 @@ func (c *Client) SendResponse(requestId string, response ocpp.Response) error {
 	}
 	jsonMessage, err := callResult.MarshalJSON()
 	if err != nil {
-		return err
+		return ocpp.NewError(GenericError, err.Error(), requestId)
 	}
 	if err = c.client.Write(jsonMessage); err != nil {
-		log.Errorf("error sending response [%s]: %v", callResult.UniqueId, err)
-		return err
+		log.Errorf("error sending response [%s]: %v", callResult.GetUniqueId(), err)
+		return ocpp.NewError(GenericError, err.Error(), requestId)
 	}
-	log.Debugf("sent CALL RESULT [%s]", callResult.UniqueId)
+	log.Debugf("sent CALL RESULT [%s]", callResult.GetUniqueId())
 	log.Debugf("sent JSON message to server: %s", string(jsonMessage))
 	return nil
 }
@@ -196,13 +198,14 @@ func (c *Client) SendError(requestId string, errorCode ocpp.ErrorCode, descripti
 	}
 	jsonMessage, err := callError.MarshalJSON()
 	if err != nil {
-		return err
+		return ocpp.NewError(GenericError, err.Error(), requestId)
 	}
 	if err = c.client.Write(jsonMessage); err != nil {
 		log.Errorf("error sending response error [%s]: %v", callError.UniqueId, err)
-		return err
+		return ocpp.NewError(GenericError, err.Error(), requestId)
 	}
 	log.Debugf("sent CALL ERROR [%s]", callError.UniqueId)
+	log.Debugf("sent JSON message to server: %s", string(jsonMessage))
 	return nil
 }
 
@@ -248,6 +251,33 @@ func (c *Client) ocppMessageHandler(data []byte) error {
 		}
 	}
 	return nil
+}
+
+// HandleFailedResponseError allows to handle failures while sending responses (either CALL_RESULT or CALL_ERROR).
+// It internally analyzes and creates an ocpp.Error based on the given error.
+// It will the attempt to send it to the server.
+//
+// The function helps to prevent starvation on the other endpoint, which is caused by a response never reaching it.
+// The method will, however, only attempt to send a default error once.
+// If this operation fails, the other endpoint may still starve.
+func (c *Client) HandleFailedResponseError(requestID string, err error, featureName string) {
+	log.Debugf("handling error for failed response [%s]", requestID)
+	var responseErr *ocpp.Error
+	// There's several possible errors: invalid profile, invalid payload or send error
+	switch err.(type) {
+	case validator.ValidationErrors:
+		// Validation error
+		validationErr := err.(validator.ValidationErrors)
+		responseErr = errorFromValidation(validationErr, requestID, featureName)
+	case *ocpp.Error:
+		// Internal OCPP error
+		responseErr = err.(*ocpp.Error)
+	case error:
+		// Unknown error
+		responseErr = ocpp.NewError(GenericError, err.Error(), requestID)
+	}
+	// Send an OCPP error to the target, since no regular response could be sent
+	_ = c.SendError(requestID, responseErr.Code, responseErr.Description, nil)
 }
 
 func (c *Client) onDisconnected(err error) {

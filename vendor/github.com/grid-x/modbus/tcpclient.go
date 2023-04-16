@@ -68,12 +68,13 @@ func (mb *tcpPackager) SetSlave(slaveID byte) {
 }
 
 // Encode adds modbus application protocol header:
-//  Transaction identifier: 2 bytes
-//  Protocol identifier: 2 bytes
-//  Length: 2 bytes
-//  Unit identifier: 1 byte
-//  Function code: 1 byte
-//  Data: n bytes
+//
+//	Transaction identifier: 2 bytes
+//	Protocol identifier: 2 bytes
+//	Length: 2 bytes
+//	Unit identifier: 1 byte
+//	Function code: 1 byte
+//	Data: n bytes
 func (mb *tcpPackager) Encode(pdu *ProtocolDataUnit) (adu []byte, err error) {
 	adu = make([]byte, tcpHeaderSize+1+len(pdu.Data))
 
@@ -100,10 +101,11 @@ func (mb *tcpPackager) Verify(aduRequest []byte, aduResponse []byte) error {
 }
 
 // Decode extracts PDU from TCP frame:
-//  Transaction identifier: 2 bytes
-//  Protocol identifier: 2 bytes
-//  Length: 2 bytes
-//  Unit identifier: 1 byte
+//
+//	Transaction identifier: 2 bytes
+//	Protocol identifier: 2 bytes
+//	Length: 2 bytes
+//	Unit identifier: 1 byte
 func (mb *tcpPackager) Decode(adu []byte) (pdu *ProtocolDataUnit, err error) {
 	// Read length value in the header
 	length := binary.BigEndian.Uint16(adu[4:])
@@ -218,9 +220,15 @@ func (mb *tcpTransporter) readResponse(aduRequest []byte, data []byte, recoveryD
 					return // everything is OK
 				}
 			}
+
+			// no time left, report error
+			if time.Since(recoveryDeadline) >= 0 {
+				return
+			}
+
 			switch v := err.(type) {
 			case ErrTCPHeaderLength:
-				if mb.LinkRecoveryTimeout > 0 && time.Until(recoveryDeadline) > 0 {
+				if mb.LinkRecoveryTimeout > 0 {
 					// TCP header not OK - retry with another query
 					res = readResultRetry
 					return
@@ -228,24 +236,24 @@ func (mb *tcpTransporter) readResponse(aduRequest []byte, data []byte, recoveryD
 				// no time left, report error
 				return
 			case errTransactionIDMismatch:
-				if mb.ProtocolRecoveryTimeout > 0 && time.Until(recoveryDeadline) > 0 {
-					// the first condition check for a normal transaction id mismatch. The second part of the condition check for a wrap-around. If a wraparound is
-					// detected (last attempt is smaller than last success), the id can be higher than the last success or lower than the last attempt, but not both
-					if (v.got > mb.lastSuccessfulTransactionID && v.got < mb.lastAttemptedTransactionID) ||
-						(mb.lastAttemptedTransactionID < mb.lastSuccessfulTransactionID && (v.got > mb.lastSuccessfulTransactionID || v.got < mb.lastAttemptedTransactionID)) {
-						// most likely, we simply had a timeout for the earlier query and now read the (late) response. Ignore it
-						// and assume that the response will come *without* sending another query. (If we send another query
-						// with transactionId X+1 here, we would again get a transactionMismatchError if the response to
-						// transactionId X is already in the buffer).
-						continue
-					}
-					// some other mismatch, still in time - retry with another query
+				// the first condition check for a normal transaction id mismatch. The second part of the condition check for a wrap-around. If a wraparound is
+				// detected (last attempt is smaller than last success), the id can be higher than the last success or lower than the last attempt, but not both
+				if (v.got > mb.lastSuccessfulTransactionID && v.got < mb.lastAttemptedTransactionID) ||
+					(mb.lastAttemptedTransactionID < mb.lastSuccessfulTransactionID && (v.got > mb.lastSuccessfulTransactionID || v.got < mb.lastAttemptedTransactionID)) {
+					// most likely, we simply had a timeout for the earlier query and now read the (late) response. Ignore it
+					// and assume that the response will come *without* sending another query. (If we send another query
+					// with transactionId X+1 here, we would again get a transactionMismatchError if the response to
+					// transactionId X is already in the buffer).
+					continue
+				}
+				if mb.ProtocolRecoveryTimeout > 0 {
+					// some other mismatch, still in time and protocol may recover - retry with another query
 					res = readResultRetry
 					return
 				}
 				return // no time left, report error
 			default:
-				if mb.ProtocolRecoveryTimeout > 0 && time.Until(recoveryDeadline) > 0 {
+				if mb.ProtocolRecoveryTimeout > 0 {
 					// TCP header OK but modbus frame not - retry with another query
 					res = readResultRetry
 					return
