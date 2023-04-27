@@ -284,7 +284,7 @@ github.com/dylanmei/iso8601
 ## explicit; go 1.14
 github.com/eclipse/paho.mqtt.golang
 github.com/eclipse/paho.mqtt.golang/packets
-# github.com/enbility/cemd v0.2.1
+# github.com/enbility/cemd v0.2.2
 ## explicit; go 1.18
 github.com/enbility/cemd/cem
 github.com/enbility/cemd/emobility
