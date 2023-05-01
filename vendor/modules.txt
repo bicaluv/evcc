@@ -204,7 +204,7 @@ github.com/benbjohnson/clock
 github.com/beorn7/perks/quantile
 # github.com/bitly/go-simplejson v0.5.0
 ## explicit
-# github.com/bogosj/tesla v1.1.0
+# github.com/bogosj/tesla v1.1.1-0.20230430222423-0d6e63ee90c9
 ## explicit; go 1.18
 github.com/bogosj/tesla
 # github.com/cenkalti/backoff v2.2.1+incompatible
