@@ -779,9 +779,9 @@ github.com/volkszaehler/mbmd/encoding
 github.com/volkszaehler/mbmd/meters
 github.com/volkszaehler/mbmd/meters/rs485
 github.com/volkszaehler/mbmd/meters/sunspec
-# github.com/writeas/go-strip-markdown v2.0.1+incompatible
-## explicit
-github.com/writeas/go-strip-markdown
+# github.com/writeas/go-strip-markdown/v2 v2.1.1
+## explicit; go 1.13
+github.com/writeas/go-strip-markdown/v2
 # gitlab.com/bboehmke/sunny v0.15.1-0.20211022160056-2fba1c86ade6
 ## explicit; go 1.16
 gitlab.com/bboehmke/sunny
