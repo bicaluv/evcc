@@ -1,11 +1,10 @@
 // Functions for getting info about the system state:
 //
-//   (*Client) GetSystemStatus()
-//   (*Client) GetGridFaults()
-//   (*Client) GetGridStatus()
-//   (*Client) GetSOE()
-//   (*Client) GetOperation()
-//
+//	(*Client) GetSystemStatus()
+//	(*Client) GetGridFaults()
+//	(*Client) GetGridStatus()
+//	(*Client) GetSOE()
+//	(*Client) GetOperation()
 package powerwall
 
 import "time"
@@ -19,18 +18,18 @@ import "time"
 // This structure is returned by the GetSystemStatus function.
 type SystemStatusData struct {
 	CommandSource                  string  `json:"command_source"`
-	BatteryTargetPower             float32 `json:"battery_target_power"`
-	BatteryTargetReactivePower     float32 `json:"battery_target_reactive_power"`
-	NominalFullPackEnergy          float32 `json:"nominal_full_pack_energy"`
-	NominalEnergyRemaining         float32 `json:"nominal_energy_remaining"`
-	MaxPowerEnergyRemaining        float32 `json:"max_power_energy_remaining"`
-	MaxPowerEnergyToBeCharged      float32 `json:"max_power_energy_to_be_charged"`
-	MaxChargePower                 float32 `json:"max_charge_power"`
-	MaxDischargePower              float32 `json:"max_discharge_power"`
-	MaxApparentPower               float32 `json:"max_apparent_power"`
-	InstantaneousMaxDischargePower float32 `json:"instantaneous_max_discharge_power"`
-	InstantaneousMaxChargePower    float32 `json:"instantaneous_max_charge_power"`
-	GridServicesPower              float32 `json:"grid_services_power"`
+	BatteryTargetPower             float64 `json:"battery_target_power"`
+	BatteryTargetReactivePower     float64 `json:"battery_target_reactive_power"`
+	NominalFullPackEnergy          float64 `json:"nominal_full_pack_energy"`
+	NominalEnergyRemaining         float64 `json:"nominal_energy_remaining"`
+	MaxPowerEnergyRemaining        float64 `json:"max_power_energy_remaining"`
+	MaxPowerEnergyToBeCharged      float64 `json:"max_power_energy_to_be_charged"`
+	MaxChargePower                 float64 `json:"max_charge_power"`
+	MaxDischargePower              float64 `json:"max_discharge_power"`
+	MaxApparentPower               float64 `json:"max_apparent_power"`
+	InstantaneousMaxDischargePower float64 `json:"instantaneous_max_discharge_power"`
+	InstantaneousMaxChargePower    float64 `json:"instantaneous_max_charge_power"`
+	GridServicesPower              float64 `json:"grid_services_power"`
 	SystemIslandState              string  `json:"system_island_state"`
 	AvailableBlocks                int     `json:"available_blocks"`
 	BatteryBlocks                  []struct {
@@ -40,15 +39,15 @@ type SystemStatusData struct {
 		DisabledReasons        []interface{} `json:"disabled_reasons"` // TODO: Unclear what type these entries are when present.
 		PinvState              string        `json:"pinv_state"`
 		PinvGridState          string        `json:"pinv_grid_state"`
-		NominalEnergyRemaining float32       `json:"nominal_energy_remaining"`
-		NominalFullPackEnergy  float32       `json:"nominal_full_pack_energy"`
-		POut                   float32       `json:"p_out"`
-		QOut                   float32       `json:"q_out"`
-		VOut                   float32       `json:"v_out"`
-		FOut                   float32       `json:"f_out"`
-		IOut                   float32       `json:"i_out"`
-		EnergyCharged          float32       `json:"energy_charged"`
-		EnergyDischarged       float32       `json:"energy_discharged"`
+		NominalEnergyRemaining float64       `json:"nominal_energy_remaining"`
+		NominalFullPackEnergy  float64       `json:"nominal_full_pack_energy"`
+		POut                   float64       `json:"p_out"`
+		QOut                   float64       `json:"q_out"`
+		VOut                   float64       `json:"v_out"`
+		FOut                   float64       `json:"f_out"`
+		IOut                   float64       `json:"i_out"`
+		EnergyCharged          float64       `json:"energy_charged"`
+		EnergyDischarged       float64       `json:"energy_discharged"`
 		OffGrid                bool          `json:"off_grid"`
 		VfMode                 bool          `json:"vf_mode"`
 		WobbleDetected         bool          `json:"wobble_detected"`
@@ -57,23 +56,23 @@ type SystemStatusData struct {
 		OpSeqState             string        `json:"OpSeqState"`
 		Version                string        `json:"version"`
 	} `json:"battery_blocks"`
-	FfrPowerAvailabilityHigh   float32         `json:"ffr_power_availability_high"`
-	FfrPowerAvailabilityLow    float32         `json:"ffr_power_availability_low"`
-	LoadChargeConstraint       float32         `json:"load_charge_constraint"`
-	MaxSustainedRampRate       float32         `json:"max_sustained_ramp_rate"`
+	FfrPowerAvailabilityHigh   float64         `json:"ffr_power_availability_high"`
+	FfrPowerAvailabilityLow    float64         `json:"ffr_power_availability_low"`
+	LoadChargeConstraint       float64         `json:"load_charge_constraint"`
+	MaxSustainedRampRate       float64         `json:"max_sustained_ramp_rate"`
 	GridFaults                 []GridFaultData `json:"grid_faults"`
 	CanReboot                  string          `json:"can_reboot"`
-	SmartInvDeltaP             float32         `json:"smart_inv_delta_p"`
-	SmartInvDeltaQ             float32         `json:"smart_inv_delta_q"`
+	SmartInvDeltaP             float64         `json:"smart_inv_delta_p"`
+	SmartInvDeltaQ             float64         `json:"smart_inv_delta_q"`
 	LastToggleTimestamp        time.Time       `json:"last_toggle_timestamp"`
-	SolarRealPowerLimit        float32         `json:"solar_real_power_limit"`
-	Score                      float32         `json:"score"`
+	SolarRealPowerLimit        float64         `json:"solar_real_power_limit"`
+	Score                      float64         `json:"score"`
 	BlocksControlled           int             `json:"blocks_controlled"`
 	Primary                    bool            `json:"primary"`
-	AuxiliaryLoad              float32         `json:"auxiliary_load"`
+	AuxiliaryLoad              float64         `json:"auxiliary_load"`
 	AllEnableLinesHigh         bool            `json:"all_enable_lines_high"`
-	InverterNominalUsablePower float32         `json:"inverter_nominal_usable_power"`
-	ExpectedEnergyRemaining    float32         `json:"expected_energy_remaining"`
+	InverterNominalUsablePower float64         `json:"inverter_nominal_usable_power"`
+	ExpectedEnergyRemaining    float64         `json:"expected_energy_remaining"`
 }
 
 // GetSystemStatus performs a "system_status" API call to fetch general
@@ -165,7 +164,7 @@ func (c *Client) GetGridStatus() (*GridStatusData, error) {
 //
 // This structure is returned by the GetSOE function.
 type SOEData struct {
-	Percentage float32 `json:"percentage"`
+	Percentage float64 `json:"percentage"`
 }
 
 // GetSOE returns information about the current "State Of Energy" of the
@@ -187,8 +186,8 @@ func (c *Client) GetSOE() (*SOEData, error) {
 // This structure is returned by the GetOperation function.
 type OperationData struct {
 	RealMode                string  `json:"real_mode"`
-	BackupReservePercent    float32 `json:"backup_reserve_percent"`
-	FreqShiftLoadShedSoe    float32 `json:"freq_shift_load_shed_soe"`
+	BackupReservePercent    float64 `json:"backup_reserve_percent"`
+	FreqShiftLoadShedSoe    float64 `json:"freq_shift_load_shed_soe"`
 	FreqShiftLoadShedDeltaF float64 `json:"freq_shift_load_shed_delta_f"`
 }
 
