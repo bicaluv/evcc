@@ -53,7 +53,8 @@ const (
 	minActiveCurrent = 1.0 // minimum current at which a phase is treated as active
 	minActiveVoltage = 208 // minimum voltage at which a phase is treated as active
 
-	guardGracePeriod = 60 * time.Second // allow out of sync during this timespan
+	guardGracePeriod    = 60 * time.Second // allow out of sync during this timespan
+	phaseSwitchDuration = 60 * time.Second // do not measure phases during this timespan
 )
 
 // elapsed is the time an expired timer will be set to
@@ -107,6 +108,7 @@ type Loadpoint struct {
 
 	// exposed public configuration
 	sync.Mutex                // guard status
+	vehicleMux sync.Mutex     // guard vehicle
 	Mode       api.ChargeMode `mapstructure:"mode"` // Charge mode, guarded by mutex
 
 	Title_            string   `mapstructure:"title"`    // UI title
@@ -133,6 +135,7 @@ type Loadpoint struct {
 	guardUpdated        time.Time // Charger enabled/disabled timestamp
 	socUpdated          time.Time // Soc updated timestamp (poll: connected)
 	vehicleDetect       time.Time // Vehicle connected timestamp
+	phasesSwitched      time.Time // Phase switch timestamp
 	vehicleDetectTicker *clock.Ticker
 	vehicleIdentifier   string
 
@@ -686,15 +689,6 @@ func (lp *Loadpoint) setLimit(chargeCurrent float64, force bool) error {
 		}
 		lp.elapseGuard()
 
-		// remote stop
-		// TODO https://github.com/evcc-io/evcc/discussions/1929
-		// if car, ok := lp.vehicle.(api.VehicleChargeController); !enabled && ok {
-		// 	// log but don't propagate
-		// 	if err := car.StopCharge(); err != nil {
-		// 		lp.log.ERROR.Printf("vehicle remote charge stop: %v", err)
-		// 	}
-		// }
-
 		if err := lp.charger.Enable(enabled); err != nil {
 			return fmt.Errorf("charger %s: %w", status[enabled], err)
 		}
@@ -711,15 +705,6 @@ func (lp *Loadpoint) setLimit(chargeCurrent float64, force bool) error {
 		} else {
 			lp.stopWakeUpTimer()
 		}
-
-		// remote start
-		// TODO https://github.com/evcc-io/evcc/discussions/1929
-		// if car, ok := lp.vehicle.(api.VehicleChargeController); enabled && ok {
-		// 	// log but don't propagate
-		// 	if err := car.StartCharge(); err != nil {
-		// 		lp.log.ERROR.Printf("vehicle remote charge start: %v", err)
-		// 	}
-		// }
 	}
 
 	return nil
@@ -767,7 +752,8 @@ func (lp *Loadpoint) targetSocReached() bool {
 // minSocNotReached checks if minimum is configured and not reached.
 // If vehicle is not configured this will always return false
 func (lp *Loadpoint) minSocNotReached() bool {
-	if lp.vehicle == nil || lp.Soc.min == 0 {
+	vehicle := lp.GetVehicle()
+	if vehicle == nil || lp.Soc.min == 0 {
 		return false
 	}
 
@@ -881,7 +867,7 @@ func (lp *Loadpoint) effectiveCurrent() float64 {
 
 	// adjust actual current for vehicles like Zoe where it remains below target
 	if lp.chargeCurrents != nil {
-		cur := lp.chargeCurrents[0]
+		cur := max(lp.chargeCurrents)
 		return math.Min(cur+2.0, lp.chargeCurrent)
 	}
 
@@ -956,21 +942,16 @@ func (lp *Loadpoint) scalePhases(phases int) error {
 	}
 
 	if lp.GetPhases() != phases {
-		// disable charger - this will also stop the car charging using the api if available
-		if err := lp.setLimit(0, true); err != nil {
-			return err
-		}
-
 		// switch phases
 		if err := cp.Phases1p3p(phases); err != nil {
 			return fmt.Errorf("switch phases: %w", err)
 		}
 
+		// prevent premature measurement of active phases
+		lp.phasesSwitched = lp.clock.Now()
+
 		// update setting and reset timer
 		lp.setPhases(phases)
-
-		// allow pv mode to re-enable charger right away
-		lp.elapsePVTimer()
 	}
 
 	return nil
@@ -1098,11 +1079,7 @@ func (lp *Loadpoint) pvMaxCurrent(mode api.ChargeMode, sitePower float64, batter
 	// switch phases up/down
 	if _, ok := lp.charger.(api.PhaseSwitcher); ok {
 		availablePower := -sitePower + lp.chargePower
-
-		// in case of scaling, keep charger disabled for this cycle
-		if lp.pvScalePhases(availablePower, minCurrent, maxCurrent) {
-			return 0
-		}
+		_ = lp.pvScalePhases(availablePower, minCurrent, maxCurrent)
 	}
 
 	// calculate target charge current from delta power and actual current
@@ -1237,7 +1214,7 @@ func (lp *Loadpoint) updateChargeCurrents() {
 	lp.log.DEBUG.Printf("charge currents: %.3gA", lp.chargeCurrents)
 	lp.publish("chargeCurrents", lp.chargeCurrents)
 
-	if lp.charging() {
+	if lp.charging() && lp.phaseSwitchCompleted() {
 		var phases int
 		for _, i := range lp.chargeCurrents {
 			if i > minActiveCurrent {
@@ -1359,7 +1336,7 @@ func (lp *Loadpoint) publishSocAndRange() {
 
 		// vehicle target soc
 		targetSoc := 100
-		if vs, ok := lp.vehicle.(api.SocLimiter); ok {
+		if vs, ok := lp.GetVehicle().(api.SocLimiter); ok {
 			if limit, err := vs.TargetSoc(); err == nil {
 				targetSoc = int(math.Trunc(limit))
 				lp.log.DEBUG.Printf("vehicle soc limit: %.0f%%", limit)
@@ -1384,7 +1361,7 @@ func (lp *Loadpoint) publishSocAndRange() {
 		lp.SetRemainingEnergy(1e3 * lp.socEstimator.RemainingChargeEnergy(socLimit))
 
 		// range
-		if vs, ok := lp.vehicle.(api.VehicleRange); ok {
+		if vs, ok := lp.GetVehicle().(api.VehicleRange); ok {
 			if rng, err := vs.Range(); err == nil {
 				lp.log.DEBUG.Printf("vehicle range: %dkm", rng)
 				lp.publish(vehicleRange, rng)
@@ -1444,6 +1421,11 @@ func (lp *Loadpoint) stopWakeUpTimer() {
 // guardGracePeriodElapsed checks if last guard update is within guard grace period
 func (lp *Loadpoint) guardGracePeriodElapsed() bool {
 	return time.Since(lp.guardUpdated) > guardGracePeriod
+}
+
+// phaseSwitchCompleted returns true if phase switch has completed
+func (lp *Loadpoint) phaseSwitchCompleted() bool {
+	return time.Since(lp.phasesSwitched) > phaseSwitchDuration
 }
 
 // Update is the main control function. It reevaluates meters and charger state
