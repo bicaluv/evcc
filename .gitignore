@@ -12,6 +12,7 @@ __debug_bin
 !util/templates/**/*.yaml
 !package*.json
 !evcc.dist.yaml
+!tests/**/*.evcc.yaml
 evcc
 evcc.exe
 evcc_*
@@ -33,3 +34,6 @@ vendor/*
 Raspi_backup.iso
 QEMU_EFI.fd
 asset-stats.html
+/test-results/
+/playwright-report/
+/playwright/.cache/
