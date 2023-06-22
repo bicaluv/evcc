@@ -177,7 +177,20 @@ func NewEasee(user, password, charger string, timeout time.Duration) (*Easee, er
 		err = os.ErrDeadlineExceeded
 	}
 
+	if err == nil {
+		go c.heartbeat()
+	}
+
 	return c, err
+}
+
+// heartbeat ensures tokens are refreshed even when not charging for longer time
+func (c *Easee) heartbeat() {
+	for range time.Tick(6 * time.Hour) {
+		if _, err := c.chargerSite(c.charger); err != nil {
+			c.log.ERROR.Println("heartbeat:", err)
+		}
+	}
 }
 
 func (c *Easee) chargerSite(charger string) (easee.Site, error) {
@@ -419,18 +432,18 @@ func (c *Easee) postJSONAndWait(uri string, data any) error {
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode == 200 { //sync call
+	if resp.StatusCode == 200 { // sync call
 		return nil
 	}
 
-	if resp.StatusCode == 202 { //async call, wait for response
+	if resp.StatusCode == 202 { // async call, wait for response
 		var cmd easee.RestCommandResponse
 
-		if strings.Contains(uri, "/commands/") { //command endpoint
+		if strings.Contains(uri, "/commands/") { // command endpoint
 			if err := json.NewDecoder(resp.Body).Decode(&cmd); err != nil {
 				return err
 			}
-		} else { //settings endpoint
+		} else { // settings endpoint
 			var cmdArr []easee.RestCommandResponse
 			if err := json.NewDecoder(resp.Body).Decode(&cmdArr); err != nil {
 				return err
@@ -441,9 +454,10 @@ func (c *Easee) postJSONAndWait(uri string, data any) error {
 			}
 		}
 
-		if cmd.Ticks == 0 { //Easee API thinks this was a noop
+		if cmd.Ticks == 0 { // api thinks this was a noop
 			return nil
 		}
+
 		return c.waitForTickResponse(cmd.Ticks)
 	}
 
@@ -536,7 +550,12 @@ func (c *Easee) Phases1p3p(phases int) error {
 
 			uri := fmt.Sprintf("%s/chargers/%s/settings", easee.API, c.charger)
 
-			err = c.postJSONAndWait(uri, data)
+			if err = c.postJSONAndWait(uri, data); err != nil {
+				return err
+			}
+
+			// disable charger to activate changed settings (loadpoint will reenable it)
+			err = c.Enable(false)
 		}
 	}
 
