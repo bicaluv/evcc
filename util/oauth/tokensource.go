@@ -20,7 +20,12 @@ type TokenSource struct {
 }
 
 func RefreshTokenSource(token *oauth2.Token, refresher TokenRefresher) oauth2.TokenSource {
-	return &TokenSource{token: token, refresher: refresher}
+	ts := &TokenSource{
+		token:     token,
+		refresher: refresher,
+	}
+
+	return ts
 }
 
 func (ts *TokenSource) Token() (*oauth2.Token, error) {

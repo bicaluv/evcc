@@ -178,17 +178,17 @@ func NewEasee(user, password, charger string, timeout time.Duration) (*Easee, er
 	}
 
 	if err == nil {
-		go c.heartbeat()
+		go c.refresh()
 	}
 
 	return c, err
 }
 
-// heartbeat ensures tokens are refreshed even when not charging for longer time
-func (c *Easee) heartbeat() {
-	for range time.Tick(6 * time.Hour) {
-		if _, err := c.chargerSite(c.charger); err != nil {
-			c.log.ERROR.Println("heartbeat:", err)
+// refresh ensures tokens are refreshed even when not charging for longer time
+func (c *Easee) refresh() {
+	for range time.Tick(time.Hour) {
+		if _, err := c.Client.Transport.(*oauth2.Transport).Source.Token(); err != nil {
+			c.log.ERROR.Println("token refresh:", err)
 		}
 	}
 }
