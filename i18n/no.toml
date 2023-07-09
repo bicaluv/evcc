@@ -299,6 +299,7 @@ price = "Σ-pris"
 reallyDelete = "Slett denne økten?"
 solar = "Solenergi"
 title = "Ladeøkter"
+total = "Totalt"
 vehicle = "Kjøretøy"
 
 [sessions.csv]

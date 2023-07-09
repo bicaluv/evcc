@@ -592,6 +592,8 @@ StartDiscovery 			This method starts the device discovery session. This
 			This process will start creating Device objects as
 			new devices are discovered.
 			During discovery RSSI delta-threshold is imposed.
+			Each client can request a single device discovery session
+			per adapter.
 			Possible errors: org.bluez.Error.NotReady
 					 org.bluez.Error.Failed
 					 org.bluez.Error.InProgress
@@ -606,7 +608,8 @@ StopDiscovery 			This method will cancel any previous StartDiscovery
 			transaction.
 			Note that a discovery procedure is shared between all
 			discovery sessions thus calling StopDiscovery will only
-			release a single session.
+			release a single session and discovery will stop when
+			all sessions from all clients have finished.
 			Possible errors: org.bluez.Error.NotReady
 					 org.bluez.Error.Failed
 					 org.bluez.Error.NotAuthorized

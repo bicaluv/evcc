@@ -107,7 +107,7 @@ modalTitle = "Потрібна допомога?"
 primaryActions = "Щось не працює так, як повинно? Це хороші місця, де можна отримати допомогу."
 restartButton = "Перезапустити"
 restartDescription = "Спробували вимкнути і знову увімкнути?"
-secondaryActions = "Все ще не можете вирішити свою проблему? Ось кілька більш жорстких варіантів."
+secondaryActions = "Все ще не можете вирішити свою проблему? Ось кілька жорсткіших варіантів."
 
 [help.restart]
 cancel = "Скасувати"
@@ -289,7 +289,7 @@ avgPrice = "⌀ Ціна"
 co2 = "⌀ CO₂"
 csvMonth = "Завантажити {month} CSV"
 csvTotal = "Завантажити повний CSV"
-date = "Завершено"
+date = "Почати"
 downloadCsv = "Завантажити як CSV"
 energy = "Заряджено"
 loadpoint = "Точка зарядки"
@@ -298,6 +298,7 @@ price = "Σ Ціна"
 reallyDelete = "Ви дійсно хочете видалити цей сеанс?"
 solar = "Сонячна"
 title = "Сеанси зарядки"
+total = "Всього"
 vehicle = "Транспортний засіб"
 
 [sessions.csv]
@@ -314,7 +315,7 @@ vehicle = "Транспортний засіб"
 [sessions.filter]
 allLoadpoints = "всі точки зарядки"
 allVehicles = "всі транспортні засоби"
-filter = "фільтр"
+filter = "Фільтр"
 
 [settings]
 title = "Налаштування"

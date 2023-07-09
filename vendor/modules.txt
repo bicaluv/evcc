@@ -659,7 +659,7 @@ github.com/modern-go/concurrent
 # github.com/modern-go/reflect2 v1.0.2
 ## explicit; go 1.12
 github.com/modern-go/reflect2
-# github.com/muka/go-bluetooth v0.0.0-20220219050759-674a63b8741a
+# github.com/muka/go-bluetooth v0.0.0-20221213043340-85dc80edc4e1
 ## explicit; go 1.14
 github.com/muka/go-bluetooth/api
 github.com/muka/go-bluetooth/bluez
