@@ -318,7 +318,7 @@ func (lp *Loadpoint) collectDefaults() {
 		*actionCfg.MaxCurrent = lp.GetMaxCurrent()
 		*actionCfg.MinSoc = lp.GetMinSoc()
 		*actionCfg.TargetSoc = lp.GetTargetSoc()
-		*actionCfg.Priority = lp.Priority()
+		*actionCfg.Priority = lp.GetPriority()
 	} else {
 		lp.log.ERROR.Printf("error allocating action config: %v", err)
 	}
@@ -560,6 +560,9 @@ func (lp *Loadpoint) applyAction(actionCfg api.ActionConfig) {
 	if actionCfg.TargetSoc != nil {
 		lp.SetTargetSoc(*actionCfg.TargetSoc)
 	}
+	if actionCfg.Priority != nil {
+		lp.SetPriority(*actionCfg.Priority)
+	}
 }
 
 // Prepare loadpoint configuration by adding missing helper elements
@@ -606,6 +609,7 @@ func (lp *Loadpoint) Prepare(uiChan chan<- util.Param, pushChan chan<- push.Even
 	}
 
 	lp.publish("mode", lp.GetMode())
+	lp.publish("priority", lp.GetPriority())
 	lp.publish(targetSoc, lp.GetTargetSoc())
 	lp.publish(minSoc, lp.GetMinSoc())
 
