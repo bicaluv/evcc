@@ -650,7 +650,7 @@ github.com/mitchellh/mapstructure
 # github.com/mitchellh/reflectwalk v1.0.2
 ## explicit
 github.com/mitchellh/reflectwalk
-# github.com/mlnoga/rct v0.1.2-0.20230227143934-71af1fb7dfa1
+# github.com/mlnoga/rct v0.1.2-0.20230731074838-03eacb926f99
 ## explicit; go 1.17
 github.com/mlnoga/rct
 # github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd
