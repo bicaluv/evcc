@@ -22,6 +22,9 @@ github.com/PuerkitoBio/goquery
 # github.com/ahmetb/go-linq/v3 v3.2.0
 ## explicit; go 1.11
 github.com/ahmetb/go-linq/v3
+# github.com/andig/go-powerwall v0.2.1-0.20230808194509-dd70cdb6e140
+## explicit; go 1.18
+github.com/andig/go-powerwall
 # github.com/andig/gosunspec v0.0.0-20211108155140-af2e73b86e71
 ## explicit; go 1.13
 github.com/andig/gosunspec
@@ -330,9 +333,6 @@ github.com/fatih/structs
 # github.com/felixge/httpsnoop v1.0.3
 ## explicit; go 1.13
 github.com/felixge/httpsnoop
-# github.com/foogod/go-powerwall v0.2.0 => github.com/andig/go-powerwall v0.2.1-0.20230525091927-777196024a18
-## explicit; go 1.18
-github.com/foogod/go-powerwall
 # github.com/fsnotify/fsnotify v1.6.0
 ## explicit; go 1.16
 github.com/fsnotify/fsnotify
@@ -1173,5 +1173,4 @@ nhooyr.io/websocket/internal/errd
 nhooyr.io/websocket/internal/wsjs
 nhooyr.io/websocket/internal/xsync
 nhooyr.io/websocket/wsjson
-# github.com/foogod/go-powerwall => github.com/andig/go-powerwall v0.2.1-0.20230525091927-777196024a18
 # github.com/grid-x/modbus => github.com/evcc-io/modbus v0.0.0-20230705160100-23e1df2c01c3
