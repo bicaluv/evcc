@@ -864,7 +864,7 @@ github.com/vmihailenco/msgpack/v5/msgpcode
 github.com/vmihailenco/tagparser/v2
 github.com/vmihailenco/tagparser/v2/internal
 github.com/vmihailenco/tagparser/v2/internal/parser
-# github.com/volkszaehler/mbmd v0.0.0-20230619194555-eff79d92007e
+# github.com/volkszaehler/mbmd v0.0.0-20230819073623-ab54b0355354
 ## explicit; go 1.18
 github.com/volkszaehler/mbmd/encoding
 github.com/volkszaehler/mbmd/meters
@@ -900,6 +900,9 @@ golang.org/x/crypto/openpgp/s2k
 golang.org/x/crypto/pbkdf2
 golang.org/x/crypto/scrypt
 golang.org/x/crypto/sha3
+# golang.org/x/crypto/x509roots/fallback v0.0.0-20230804165707-b4ddeeda5bc7
+## explicit; go 1.20
+golang.org/x/crypto/x509roots/fallback
 # golang.org/x/exp v0.0.0-20230522175609-2e198f4a06a1
 ## explicit; go 1.20
 golang.org/x/exp/constraints
