@@ -652,6 +652,7 @@ func (lp *Loadpoint) syncCharger() error {
 		}
 		enabled = true // treat as enabled when charging
 		lp.elapseGuard()
+		lp.elapsePVTimer()
 		return nil
 	}
 
