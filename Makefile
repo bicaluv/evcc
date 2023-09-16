@@ -1,5 +1,5 @@
 # build vars
-TAG_NAME := $(shell test -d .git && git describe --abbrev=0 --tags)
+TAG_NAME := $(shell test -d .git && git describe --abbrev=0 --tags upstream/master)_mm
 SHA := $(shell test -d .git && git rev-parse --short HEAD)
 COMMIT := $(SHA)
 # hide commit for releases
