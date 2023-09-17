@@ -20,6 +20,7 @@ type Client struct {
 	errorHandler          func(err *ocpp.Error, details interface{})
 	onDisconnectedHandler func(err error)
 	onReconnectedHandler  func()
+	invalidMessageHook    func(err *ocpp.Error, rawMessage string, parsedFields []interface{}) *ocpp.Error
 	dispatcher            ClientDispatcher
 	RequestState          ClientState
 }
@@ -29,6 +30,7 @@ type Client struct {
 // a state handler and a list of supported profiles (optional).
 //
 // You may create a simple new server by using these default values:
+//
 //	s := ocppj.NewClient(ws.NewClient(), nil, nil)
 //
 // The wsClient parameter cannot be nil. Refer to the ws package for information on how to create and
@@ -65,6 +67,24 @@ func (c *Client) SetResponseHandler(handler func(response ocpp.Response, request
 // Registers a handler for incoming error messages.
 func (c *Client) SetErrorHandler(handler func(err *ocpp.Error, details interface{})) {
 	c.errorHandler = handler
+}
+
+// SetInvalidMessageHook registers an optional hook for incoming messages that couldn't be parsed.
+// This hook is called when a message is received but cannot be parsed to the target OCPP message struct.
+//
+// The application is notified synchronously of the error.
+// The callback provides the raw JSON string, along with the parsed fields.
+// The application MUST return as soon as possible, since the hook is called synchronously and awaits a return value.
+//
+// While the hook does not allow responding to the message directly,
+// the return value will be used to send an OCPP error to the other endpoint.
+//
+// If no handler is registered (or no error is returned by the hook),
+// the internal error message is sent to the client without further processing.
+//
+// Note: Failing to return from the hook will cause the client to block indefinitely.
+func (c *Client) SetInvalidMessageHook(hook func(err *ocpp.Error, rawMessage string, parsedFields []interface{}) *ocpp.Error) {
+	c.invalidMessageHook = hook
 }
 
 func (c *Client) SetOnDisconnectedHandler(handler func(err error)) {
@@ -108,11 +128,17 @@ func (c *Client) Start(serverURL string) error {
 func (c *Client) Stop() {
 	// Overwrite handler to intercept disconnected signal
 	cleanupC := make(chan struct{}, 1)
-	c.client.SetDisconnectedHandler(func(err error) {
-		cleanupC <- struct{}{}
-	})
+	if c.IsConnected() {
+		c.client.SetDisconnectedHandler(func(err error) {
+			cleanupC <- struct{}{}
+		})
+	} else {
+		close(cleanupC)
+	}
 	c.client.Stop()
-	c.dispatcher.Stop()
+	if c.dispatcher.IsRunning() {
+		c.dispatcher.Stop()
+	}
 	// Wait for websocket to be cleaned up
 	<-cleanupC
 }
@@ -219,6 +245,18 @@ func (c *Client) ocppMessageHandler(data []byte) error {
 	message, err := c.ParseMessage(parsedJson, c.RequestState)
 	if err != nil {
 		ocppErr := err.(*ocpp.Error)
+		messageID := ocppErr.MessageId
+		// Support ad-hoc callback for invalid message handling
+		if c.invalidMessageHook != nil {
+			err2 := c.invalidMessageHook(ocppErr, string(data), parsedJson)
+			// If the hook returns an error, use it as output error. If not, use the original error.
+			if err2 != nil {
+				ocppErr = err2
+				ocppErr.MessageId = messageID
+			}
+		}
+		err = ocppErr
+		// Send error to other endpoint if a message ID is available
 		if ocppErr.MessageId != "" {
 			err2 := c.SendError(ocppErr.MessageId, ocppErr.Code, ocppErr.Description, nil)
 			if err2 != nil {

@@ -190,11 +190,16 @@ const (
 	MessageTypeNotSupported       ocpp.ErrorCode = "MessageTypeNotSupported"       // A message with an Message Type Number received that is not supported by this implementation.
 	ProtocolError                 ocpp.ErrorCode = "ProtocolError"                 // Payload for Action is incomplete.
 	SecurityError                 ocpp.ErrorCode = "SecurityError"                 // During the processing of Action a security issue occurred preventing receiver from completing the Action successfully.
-	FormationViolation            ocpp.ErrorCode = "FormationViolation"            // Payload for Action is syntactically incorrect or not conform the PDU structure for Action.
 	PropertyConstraintViolation   ocpp.ErrorCode = "PropertyConstraintViolation"   // Payload is syntactically correct but at least one field contains an invalid value.
 	OccurrenceConstraintViolation ocpp.ErrorCode = "OccurrenceConstraintViolation" // Payload for Action is syntactically correct but at least one of the fields violates occurrence constraints.
 	TypeConstraintViolation       ocpp.ErrorCode = "TypeConstraintViolation"       // Payload for Action is syntactically correct but at least one of the fields violates data type constraints (e.g. “somestring”: 12).
 	GenericError                  ocpp.ErrorCode = "GenericError"                  // Any other error not covered by the previous ones.
+	FormatViolationV2             ocpp.ErrorCode = "FormatViolation"               // Payload for Action is syntactically incorrect. This is only valid for OCPP 2.0.1
+	FormatViolationV16            ocpp.ErrorCode = "FormationViolation"            // Payload for Action is syntactically incorrect or not conform the PDU structure for Action. This is only valid for OCPP 1.6
+)
+
+var (
+	FormationViolation = FormatViolationV16 // Used as constant, but can be overwritten depending on protocol version. Sett FormatViolationV16 and FormatViolationV2.
 )
 
 func IsErrorCodeValid(fl validator.FieldLevel) bool {
@@ -389,7 +394,11 @@ func (endpoint *Endpoint) ParseMessage(arr []interface{}, pendingRequestState Cl
 		if len(arr) != 4 {
 			return nil, ocpp.NewError(FormationViolation, "Invalid Call message. Expected array length 4", uniqueId)
 		}
-		action := arr[2].(string)
+		action, ok := arr[2].(string)
+		if !ok {
+			return nil, ocpp.NewError(FormationViolation, fmt.Sprintf("Invalid element %v at 2, expected action (string)", arr[2]), "")
+		}
+
 		profile, ok := endpoint.GetProfileForFeature(action)
 		if !ok {
 			return nil, ocpp.NewError(NotSupported, fmt.Sprintf("Unsupported feature %v", action), uniqueId)
@@ -443,7 +452,10 @@ func (endpoint *Endpoint) ParseMessage(arr []interface{}, pendingRequestState Cl
 		if len(arr) > 4 {
 			details = arr[4]
 		}
-		rawErrorCode := arr[2].(string)
+		rawErrorCode, ok := arr[2].(string)
+		if !ok {
+			return nil, ocpp.NewError(FormationViolation, fmt.Sprintf("Invalid element %v at 2, expected rawErrorCode (string)", arr[2]), rawErrorCode)
+		}
 		errorCode := ocpp.ErrorCode(rawErrorCode)
 		errorDescription := ""
 		if v, ok := arr[3].(string); ok {
