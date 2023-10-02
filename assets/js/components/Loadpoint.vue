@@ -9,7 +9,7 @@
 						class="me-2 flex-shrink-0"
 					/>
 					<div class="text-truncate">
-						{{ title || $t("main.loadpoint.fallbackName") }}
+						{{ loadpointTitle }}
 					</div>
 				</h3>
 				<LoadpointSettingsButton
@@ -214,6 +214,9 @@ export default {
 		};
 	},
 	computed: {
+		loadpointTitle: function () {
+			return this.title || this.$t("main.loadpoint.fallbackName");
+		},
 		integratedDevice: function () {
 			return this.chargerFeatureIntegratedDevice;
 		},
