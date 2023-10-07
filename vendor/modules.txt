@@ -422,6 +422,9 @@ github.com/gorilla/websocket
 # github.com/gregdel/pushover v1.3.0
 ## explicit; go 1.14
 github.com/gregdel/pushover
+# github.com/gregjones/httpcache v0.0.0-20190611155906-901d90724c79
+## explicit
+github.com/gregjones/httpcache
 # github.com/grid-x/modbus v0.0.0-20230713135356-d9fefd3ae5a5 => github.com/evcc-io/modbus v0.0.0-20230705160100-23e1df2c01c3
 ## explicit; go 1.13
 github.com/grid-x/modbus
