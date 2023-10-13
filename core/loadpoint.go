@@ -1396,7 +1396,7 @@ func (lp *Loadpoint) publishSocAndRange() {
 		return
 	}
 
-	if err == nil || lp.vehicleSocPollAllowed() {
+	if err == nil || lp.chargerHasFeature(api.IntegratedDevice) || lp.vehicleSocPollAllowed() {
 		lp.socUpdated = lp.clock.Now()
 
 		f, err := lp.socEstimator.Soc(lp.getChargedEnergy())
