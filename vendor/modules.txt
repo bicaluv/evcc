@@ -541,7 +541,7 @@ github.com/leodido/go-urn
 # github.com/libp2p/zeroconf/v2 v2.2.0
 ## explicit; go 1.16
 github.com/libp2p/zeroconf/v2
-# github.com/lorenzodonini/ocpp-go v0.17.1-0.20231009195058-5be50a50e6e9
+# github.com/lorenzodonini/ocpp-go v0.17.1-0.20231018201659-a575f3e7454d
 ## explicit; go 1.16
 github.com/lorenzodonini/ocpp-go/internal/callbackqueue
 github.com/lorenzodonini/ocpp-go/logging
