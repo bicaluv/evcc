@@ -674,7 +674,8 @@ func (lp *Loadpoint) syncCharger() error {
 				return err
 			}
 
-			if lp.chargeCurrent != current {
+			// smallest adjustment most PWM-Controllers can do is: 100%÷256×0,6A = 0.234A
+			if math.Abs(lp.chargeCurrent-current) > 0.23 {
 				if lp.guardGracePeriodElapsed() {
 					lp.log.WARN.Printf("charger logic error: current mismatch (got %.3gA, expected %.3gA)", current, lp.chargeCurrent)
 				}
@@ -830,6 +831,9 @@ func (lp *Loadpoint) minSocNotReached() bool {
 	}
 
 	if lp.vehicleSoc != 0 {
+		if lp.vehicleSoc < float64(lp.Soc.min) {
+			lp.log.DEBUG.Printf("forced charging at vehicle soc %.0f%% (< %.0f%% min soc)", lp.vehicleSoc, float64(lp.Soc.min))
+		}
 		return lp.vehicleSoc < float64(lp.Soc.min) && lp.isNighttime()
 	}
 
