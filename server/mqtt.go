@@ -19,6 +19,7 @@ var deprecatedTopics = []string{
 	"activePhases", "range", "socCharge",
 	"vehicleSoC", "batterySoC", "bufferSoC", "minSoC", "prioritySoC", "targetSoC", "vehicleTargetSoC",
 	"savingsAmount", "savingsEffectivePrice", "savingsGridCharged", "savingsSelfConsumptionCharged", "savingsSelfConsumptionPercent", "savingsTotalCharged",
+	"stats/30d", "stats/365d", "stats/total",
 }
 
 // MQTT is the MQTT server. It uses the MQTT client for publishing.
@@ -93,8 +94,10 @@ func (m *MQTT) publishComplex(topic string, retained bool, payload interface{}) 
 
 		// loop struct
 		for i := 0; i < typ.NumField(); i++ {
-			n := typ.Field(i).Name
-			m.publishComplex(fmt.Sprintf("%s/%s", topic, strings.ToLower(n[:1])+n[1:]), retained, val.Field(i).Interface())
+			if f := typ.Field(i); f.IsExported() {
+				n := f.Name
+				m.publishComplex(fmt.Sprintf("%s/%s", topic, strings.ToLower(n[:1])+n[1:]), retained, val.Field(i).Interface())
+			}
 		}
 
 	default:
@@ -118,6 +121,8 @@ func (m *MQTT) publish(topic string, retained bool, payload interface{}) {
 
 		// publish sum value
 		m.publishSingleValue(topic, retained, total)
+
+		return
 	}
 
 	m.publishComplex(topic, retained, payload)
