@@ -7,6 +7,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -15,8 +16,7 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/deepmap/oapi-codegen/pkg/runtime"
-	"github.com/pkg/errors"
+	"github.com/oapi-codegen/runtime"
 )
 
 // Doer performs HTTP requests.
