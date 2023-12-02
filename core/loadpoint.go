@@ -112,14 +112,15 @@ type Loadpoint struct {
 	vehicleMux sync.Mutex     // guard vehicle
 	Mode_      api.ChargeMode `mapstructure:"mode"` // Default charge mode, used for disconnect
 
-	Title_           string `mapstructure:"title"`    // UI title
-	Priority_        int    `mapstructure:"priority"` // Priority
-	ConfiguredPhases int    `mapstructure:"phases"`   // Charger configured phase mode 0/1/3
-	ChargerRef       string `mapstructure:"charger"`  // Charger reference
-	VehicleRef       string `mapstructure:"vehicle"`  // Vehicle reference
-	MeterRef         string `mapstructure:"meter"`    // Charge meter reference
-	Soc              SocConfig
-	Enable, Disable  ThresholdConfig
+	Title_            string `mapstructure:"title"`    // UI title
+	Priority_         int    `mapstructure:"priority"` // Priority
+	ConfiguredPhases  int    `mapstructure:"phases"`   // Charger configured phase mode 0/1/3
+	ChargerRef        string `mapstructure:"charger"`  // Charger reference
+	VehicleRef        string `mapstructure:"vehicle"`  // Vehicle reference
+	MeterRef          string `mapstructure:"meter"`    // Charge meter reference
+	Soc               SocConfig
+	Enable, Disable   ThresholdConfig
+	ResetOnDisconnect bool `mapstructure:"resetOnDisconnect"`
 
 	MinCurrent    float64       // PV mode: start current	Min+PV mode: min current
 	MaxCurrent    float64       // Max allowed current. Physically ensured by the charger
