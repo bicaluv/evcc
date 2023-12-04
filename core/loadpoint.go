@@ -72,10 +72,8 @@ type PollConfig struct {
 
 // SocConfig defines soc settings, estimation and update behavior
 type SocConfig struct {
-	Poll       PollConfig `mapstructure:"poll"`
-	Estimate   *bool      `mapstructure:"estimate"`
-	MinGeoLat  float64    `mapstructure:"minGeoLatitude"`  // latitude to calculate nighttime to postpone min SoC, guarded by mutex
-	MinGeoLong float64    `mapstructure:"minGeoLongitude"` // longitude to calculate nighttime to postpone min SoC, guarded by mutex
+	Poll     PollConfig `mapstructure:"poll"`
+	Estimate *bool      `mapstructure:"estimate"`
 }
 
 // Poll modes
@@ -112,15 +110,14 @@ type Loadpoint struct {
 	vehicleMux sync.Mutex     // guard vehicle
 	Mode_      api.ChargeMode `mapstructure:"mode"` // Default charge mode, used for disconnect
 
-	Title_            string `mapstructure:"title"`    // UI title
-	Priority_         int    `mapstructure:"priority"` // Priority
-	ConfiguredPhases  int    `mapstructure:"phases"`   // Charger configured phase mode 0/1/3
-	ChargerRef        string `mapstructure:"charger"`  // Charger reference
-	VehicleRef        string `mapstructure:"vehicle"`  // Vehicle reference
-	MeterRef          string `mapstructure:"meter"`    // Charge meter reference
-	Soc               SocConfig
-	Enable, Disable   ThresholdConfig
-	ResetOnDisconnect bool `mapstructure:"resetOnDisconnect"`
+	Title_           string `mapstructure:"title"`    // UI title
+	Priority_        int    `mapstructure:"priority"` // Priority
+	ConfiguredPhases int    `mapstructure:"phases"`   // Charger configured phase mode 0/1/3
+	ChargerRef       string `mapstructure:"charger"`  // Charger reference
+	VehicleRef       string `mapstructure:"vehicle"`  // Vehicle reference
+	MeterRef         string `mapstructure:"meter"`    // Charge meter reference
+	Soc              SocConfig
+	Enable, Disable  ThresholdConfig
 
 	MinCurrent    float64       // PV mode: start current	Min+PV mode: min current
 	MaxCurrent    float64       // Max allowed current. Physically ensured by the charger
@@ -184,6 +181,10 @@ type Loadpoint struct {
 	settings *Settings
 
 	tasks *util.Queue[Task] // tasks to be executed
+
+	// session suspending until night time
+	MinGeoLat  float64 `mapstructure:"minGeoLatitude"`  // latitude to calculate nighttime to postpone min SoC, guarded by mutex
+	MinGeoLong float64 `mapstructure:"minGeoLongitude"` // longitude to calculate nighttime to postpone min SoC, guarded by mutex
 }
 
 // NewLoadpointFromConfig creates a new loadpoint
@@ -604,8 +605,8 @@ func (lp *Loadpoint) Prepare(uiChan chan<- util.Param, pushChan chan<- push.Even
 	lp.publish(keys.LimitSoc, lp.limitSoc)
 	lp.publish(keys.LimitEnergy, lp.limitEnergy)
 
-	lp.publish("minSocGeoLat", lp.Soc.MinGeoLat)
-	lp.publish("minSocGeoLong", lp.Soc.MinGeoLong)
+	lp.publish("minSocGeoLat", lp.MinGeoLat)
+	lp.publish("minSocGeoLong", lp.MinGeoLong)
 
 	// read initial charger state to prevent immediately disabling charger
 	if enabled, err := lp.charger.Enabled(); err == nil {
@@ -836,8 +837,8 @@ func (lp *Loadpoint) minSocNotReached() bool {
 
 // isNighttime checks at the given geo position if it is currently night or day.
 func (lp *Loadpoint) isNighttime() bool {
-	if lp.Soc.MinGeoLat > float64(0) && lp.Soc.MinGeoLong > float64(0) {
-		dayOrNight, _, _ := sunrise.DayOrNight(lp.Soc.MinGeoLat, lp.Soc.MinGeoLong, time.Now())
+	if lp.MinGeoLat > float64(0) && lp.MinGeoLong > float64(0) {
+		dayOrNight, _, _ := sunrise.DayOrNight(lp.MinGeoLat, lp.MinGeoLong, time.Now())
 
 		lp.log.DEBUG.Printf("suspend until nighttime: %v", dayOrNight == sunrise.Night)
 
