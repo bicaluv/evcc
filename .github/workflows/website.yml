@@ -6,7 +6,7 @@ env:
 on:
   push:
     branches: [master]
-    paths: ["templates/evcc.io/**"]
+    paths: ["templates/**"]
   workflow_dispatch:
 
 jobs:
@@ -24,6 +24,9 @@ jobs:
 
       - name: Build docs
         run: make install docs
+
+      - name: Remove .gitignore to allow brands.json to be committed
+        run: rm templates/evcc.io/.gitignore
 
       - name: Deploy to evcc.io repo
         uses: peaceiris/actions-gh-pages@v3
