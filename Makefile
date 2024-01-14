@@ -142,7 +142,7 @@ raspberrypi:
 	env GOOS=linux GOARCH=arm go build -v $(BUILD_TAGS) $(BUILD_ARGS)
 	
 	# copy new evcc to raspberry
-	scp -B evcc pi@raspberrypi:~/bin/evcc_new
+	scp -3 -B -C evcc pi@raspberrypi:~/bin/evcc_new
 
 	# prepare restart of service
 	# ssh pi@raspberrypi 'sudo sysctl -w net.ipv4.ping_group_range="0 2147483647"; sudo chmod 0755 ~/bin/evcc_new;'
