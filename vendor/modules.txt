@@ -716,6 +716,9 @@ github.com/sirupsen/logrus
 # github.com/skratchdot/open-golang v0.0.0-20200116055534-eef842397966
 ## explicit
 github.com/skratchdot/open-golang/open
+# github.com/smallnest/chanx v1.2.0
+## explicit; go 1.18
+github.com/smallnest/chanx
 # github.com/sourcegraph/conc v0.3.0
 ## explicit; go 1.19
 github.com/sourcegraph/conc
@@ -828,8 +831,6 @@ golang.org/x/exp/slices
 golang.org/x/exp/slog
 golang.org/x/exp/slog/internal
 golang.org/x/exp/slog/internal/buffer
-# golang.org/x/lint v0.0.0-20210508222113-6edffad5e616
-## explicit; go 1.11
 # golang.org/x/mod v0.14.0
 ## explicit; go 1.18
 golang.org/x/mod/internal/lazyregexp
