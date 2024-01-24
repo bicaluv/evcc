@@ -764,6 +764,23 @@ github.com/subosito/gotenv
 # github.com/teivah/onecontext v1.3.0
 ## explicit; go 1.12
 github.com/teivah/onecontext
+# github.com/teslamotors/vehicle-command v0.0.2
+## explicit; go 1.20
+github.com/teslamotors/vehicle-command/internal/authentication
+github.com/teslamotors/vehicle-command/internal/dispatcher
+github.com/teslamotors/vehicle-command/internal/log
+github.com/teslamotors/vehicle-command/pkg/account
+github.com/teslamotors/vehicle-command/pkg/cache
+github.com/teslamotors/vehicle-command/pkg/connector
+github.com/teslamotors/vehicle-command/pkg/connector/inet
+github.com/teslamotors/vehicle-command/pkg/protocol
+github.com/teslamotors/vehicle-command/pkg/protocol/protobuf/carserver
+github.com/teslamotors/vehicle-command/pkg/protocol/protobuf/errors
+github.com/teslamotors/vehicle-command/pkg/protocol/protobuf/keys
+github.com/teslamotors/vehicle-command/pkg/protocol/protobuf/signatures
+github.com/teslamotors/vehicle-command/pkg/protocol/protobuf/universalmessage
+github.com/teslamotors/vehicle-command/pkg/protocol/protobuf/vcsec
+github.com/teslamotors/vehicle-command/pkg/vehicle
 # github.com/traefik/yaegi v0.15.1
 ## explicit; go 1.18
 github.com/traefik/yaegi/internal/unsafe2
