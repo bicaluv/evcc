@@ -150,7 +150,7 @@ raspberrypi:
 	ssh pi@raspberrypi 'sudo chmod 0755 ~/bin/evcc_new;'
 
 	# rename new/old evcc and restart already running service 
-	ssh pi@raspberrypi 'mv ~/bin/evcc ~/bin/evcc_prev; mv ~/bin/evcc_new ~/bin/evcc; sudo systemctl restart evcc.service;'
+	# mm skip until solution for tesla : ssh pi@raspberrypi 'mv ~/bin/evcc ~/bin/evcc_prev; mv ~/bin/evcc_new ~/bin/evcc; sudo systemctl restart evcc.service;'
 
 sync-with-andig-and-deploy:
 	# show commits in browser
